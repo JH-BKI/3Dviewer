@@ -3,27 +3,6 @@
  * Provides helper functions for camera manipulation and control
  */
 
-// Global camera configuration
-window.CAMERA_CONFIG = {
-    initialPosition: { x: 0, y: 0, z: 1 }, // fallback: camera 1 unit away from origin
-    orbitControls: {
-        target: { x: 0, y: 0, z: 0 },
-        minPolarAngle: 0,
-        maxPolarAngle: 180,
-        minAzimuthAngle: -180,
-        maxAzimuthAngle: 180,
-        minDistance: 0.01,
-        maxDistance: 100,
-        rotateSpeed: 0.5,
-        enablePan: true,
-        enableDamping: true,
-        dampingFactor: 0.1,
-        enableRotate: true,
-        enableZoom: true,
-        zoomSpeed: 1
-    }
-};
-
 AFRAME.registerComponent('camera-utils', {
     schema: {
         minPolarAngle: { type: 'number', default: 10 },
@@ -49,7 +28,7 @@ AFRAME.registerComponent('camera-utils', {
             animateCameraToTarget: this.animateCameraToTarget,
             resetCamera: this.resetCamera,
             setInitialPosition: (position) => {
-                window.CAMERA_CONFIG.initialPosition = position;
+                // No global config, so this is a no-op or could set directly on camera entity if needed
             }
         };
     },
@@ -63,11 +42,10 @@ AFRAME.registerComponent('camera-utils', {
             const pos = threeCamera.position;
             camera.setAttribute('position', `${pos.x} ${pos.y} ${pos.z}`);
         }
-        // Update orbit controls target using global config
-        const orbitConfig = Object.assign({}, window.CAMERA_CONFIG.orbitControls, {
-            target: new THREE.Vector3(lookAtVector.x, lookAtVector.y, lookAtVector.z)
+        // Update orbit controls target using current attribute
+        camera.setAttribute('orbit-controls', {
+            target: `${lookAtVector.x} ${lookAtVector.y} ${lookAtVector.z}`
         });
-        camera.setAttribute('orbit-controls', orbitConfig);
     },
 
     // Utility: Calculate camera position from orbit parameters
@@ -82,7 +60,6 @@ AFRAME.registerComponent('camera-utils', {
     },
 
     animateCameraToTarget: function(targetPosition, cameraOffset = { x: 2, y: 1, z: 2 }, lookAtVector = null, duration = 1000, orbitParams = null) {
-        // orbitParams: {azimuth, elevation, distance, target}
         let newPos = targetPosition;
         if (orbitParams && orbitParams.azimuth !== undefined && orbitParams.elevation !== undefined && orbitParams.distance !== undefined && orbitParams.target) {
             newPos = this.sphericalToCartesian(orbitParams.azimuth, orbitParams.elevation, orbitParams.distance, orbitParams.target);
@@ -108,12 +85,11 @@ AFRAME.registerComponent('camera-utils', {
             dur: duration,
             easing: 'easeInOutQuad'
         });
-        // Set orbit-controls target using global config
+        // Set orbit-controls target using current attribute
         const lookAt = lookAtVector || (orbitParams ? orbitParams.target : targetPosition);
-        const orbitConfig = Object.assign({}, window.CAMERA_CONFIG.orbitControls, {
-            target: new THREE.Vector3(lookAt.x, lookAt.y, lookAt.z)
+        camera.setAttribute('orbit-controls', {
+            target: `${lookAt.x} ${lookAt.y} ${lookAt.z}`
         });
-        camera.setAttribute('orbit-controls', orbitConfig);
         // Force update after animation completes
         setTimeout(() => {
             const orbitControls = camera.components['orbit-controls'];
@@ -121,8 +97,8 @@ AFRAME.registerComponent('camera-utils', {
                 orbitControls.target.set(lookAt.x, lookAt.y, lookAt.z);
                 orbitControls.update();
             }
-            if (orbitControls && orbitControls.controls && window.CAMERA_CONFIG.orbitControls.zoomSpeed !== undefined) {
-                orbitControls.controls.zoomSpeed = window.CAMERA_CONFIG.orbitControls.zoomSpeed;
+            if (orbitControls && orbitControls.controls && camera.getAttribute('orbit-controls').zoomSpeed !== undefined) {
+                orbitControls.controls.zoomSpeed = camera.getAttribute('orbit-controls').zoomSpeed;
             }
         }, duration);
     },
@@ -149,22 +125,14 @@ AFRAME.registerComponent('camera-utils', {
                 orbitControls.target.set(0, 0, 0);
                 orbitControls.update();
             }
-            // Reset orbit controls by updating its attributes using global config
-            const orbitConfig = Object.assign({}, window.CAMERA_CONFIG.orbitControls, {
-                target: new THREE.Vector3(0, 0, 0),
-                initialPosition: new THREE.Vector3(
-                    window.CAMERA_CONFIG.initialPosition.x,
-                    window.CAMERA_CONFIG.initialPosition.y,
-                    window.CAMERA_CONFIG.initialPosition.z
-                )
-            });
-            camera.setAttribute('orbit-controls', orbitConfig);
+            // Reset orbit controls by updating its attributes using the current camera attributes
+            // (No global config)
             // Force an update of the orbit controls
             if (orbitControls) {
                 orbitControls.update();
             }
-            if (orbitControls && orbitControls.controls && window.CAMERA_CONFIG.orbitControls.zoomSpeed !== undefined) {
-                orbitControls.controls.zoomSpeed = window.CAMERA_CONFIG.orbitControls.zoomSpeed;
+            if (orbitControls && orbitControls.controls && camera.getAttribute('orbit-controls').zoomSpeed !== undefined) {
+                orbitControls.controls.zoomSpeed = camera.getAttribute('orbit-controls').zoomSpeed;
             }
         }
     }

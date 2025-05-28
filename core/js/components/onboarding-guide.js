@@ -73,37 +73,37 @@ AFRAME.registerComponent('onboarding-guide', {
         
         // Track user interaction - Mouse
         this.el.sceneEl.addEventListener('mousedown', (e) => {
-            console.log('[OnboardingGuide] Mouse down event');
+            // console.log('[OnboardingGuide] Mouse down event');
             this.handleInteraction(e);
         });
         this.el.sceneEl.addEventListener('wheel', (e) => {
-            console.log('[OnboardingGuide] Wheel event');
+            // console.log('[OnboardingGuide] Wheel event');
             this.handleInteraction(e);
         });
         
         // Track user interaction - Touch
         this.el.sceneEl.addEventListener('touchstart', (e) => {
-            console.log('[OnboardingGuide] Touch start event');
+            // console.log('[OnboardingGuide] Touch start event');
             this.handleInteraction(e);
         });
         this.el.sceneEl.addEventListener('gesturestart', (e) => {
-            console.log('[OnboardingGuide] Gesture start event (pinch zoom)');
+            // console.log('[OnboardingGuide] Gesture start event (pinch zoom)');
             this.handleInteraction(e);
         });
         
         // Track user interaction - VR Controllers
         this.el.sceneEl.addEventListener('triggerdown', (e) => {
-            console.log('[OnboardingGuide] VR trigger down event');
+            // console.log('[OnboardingGuide] VR trigger down event');
             this.handleInteraction(e);
         });
         this.el.sceneEl.addEventListener('gripdown', (e) => {
-            console.log('[OnboardingGuide] VR grip down event');
+            // console.log('[OnboardingGuide] VR grip down event');
             this.handleInteraction(e);
         });
         
         // Track orbit-controls specific events
         this.el.sceneEl.addEventListener('orbit-controls-start', (e) => {
-            console.log('[OnboardingGuide] Orbit controls start event');
+            // console.log('[OnboardingGuide] Orbit controls start event');
             this.handleInteraction(e);
         });
     },
@@ -188,9 +188,9 @@ AFRAME.registerComponent('onboarding-guide', {
 
     startCooldown: function() {
         this.clearCooldown();
-        console.log('[OnboardingGuide] Starting cooldown for', this.data.cooldown, 'ms');
+        //console.log('[OnboardingGuide] Starting cooldown for', this.data.cooldown, 'ms');
         this.cooldownTimer = setTimeout(() => {
-            console.log('[OnboardingGuide] Cooldown finished, restarting onboarding');
+            //console.log('[OnboardingGuide] Cooldown finished, restarting onboarding');
             this.startGuide();
         }, this.data.cooldown);
     },
@@ -206,7 +206,7 @@ AFRAME.registerComponent('onboarding-guide', {
 
     hideUI: function() {
         if (!this.uiContainer) return;
-        console.log('[OnboardingGuide] Hiding UI');
+        // console.log('[OnboardingGuide] Hiding UI');
         this.uiContainer.classList.remove('fade-in');
         this.uiContainer.classList.add('fade-out');
         // Wait for fade-out animation to finish before hiding
@@ -229,11 +229,11 @@ AFRAME.registerComponent('onboarding-guide', {
 
     stopGuide: function() {
         if (!this.isActive) {
-            console.log('[OnboardingGuide] Guide not active, skipping stop');
+            // console.log('[OnboardingGuide] Guide not active, skipping stop');
             return;
         }
         
-        console.log('[OnboardingGuide] Stopping guide');
+        // console.log('[OnboardingGuide] Stopping guide');
         this.isActive = false;
         this.isAnimating = false;
         
@@ -248,7 +248,7 @@ AFRAME.registerComponent('onboarding-guide', {
     },
 
     startCameraMovement: function() {
-        console.log('[OnboardingGuide] Starting camera movement');
+        // console.log('[OnboardingGuide] Starting camera movement');
         // Store the current orbit-controls azimuthal angle as the base for sway
         const orbit = this.el.components['orbit-controls'];
         if (orbit && orbit.controls && orbit.controls.getAzimuthalAngle) {
@@ -270,7 +270,7 @@ AFRAME.registerComponent('onboarding-guide', {
     },
 
     stopCameraMovement: function() {
-        console.log('[OnboardingGuide] Stopping camera movement');
+        // console.log('[OnboardingGuide] Stopping camera movement');
         // Restore original azimuthal angle if possible
         const orbit = this.el.components['orbit-controls'];
         if (orbit && orbit.controls && this.swayOriginalAzimuthal !== null && orbit.controls.setAzimuthalAngle) {
@@ -279,7 +279,7 @@ AFRAME.registerComponent('onboarding-guide', {
         }
         // Re-enable orbit controls
         if (orbit) {
-            console.log('[OnboardingGuide] Re-enabling orbit controls');
+            // console.log('[OnboardingGuide] Re-enabling orbit controls');
             this.el.setAttribute('orbit-controls', 'enableRotate', true);
         }
     },
@@ -330,7 +330,7 @@ AFRAME.registerComponent('onboarding-guide', {
     },
 
     handleInteraction: function(event) {
-        console.log('[OnboardingGuide] User interaction detected:', event.type);
+        // console.log('[OnboardingGuide] User interaction detected:', event.type);
         this.lastInteraction = Date.now();
         // If guide is active or cooldown is running, stop and restart cooldown
         if (this.isActive || this.cooldownTimer) {
@@ -342,7 +342,7 @@ AFRAME.registerComponent('onboarding-guide', {
     },
 
     remove: function() {
-        console.log('[OnboardingGuide] Component being removed, cleaning up');
+        // console.log('[OnboardingGuide] Component being removed, cleaning up');
         // Clean up
         if (this.uiContainer && this.uiContainer.parentNode) {
             this.uiContainer.parentNode.removeChild(this.uiContainer);
