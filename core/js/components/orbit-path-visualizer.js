@@ -51,7 +51,7 @@ AFRAME.registerComponent('orbit-path-visualizer', {
     // Use average of min/max distance for radius
     const minDist = parseFloat(orbitConfig.minDistance) || 1;
     const maxDist = parseFloat(orbitConfig.maxDistance) || 1;
-    const radius = (minDist + maxDist) / 2;
+    const radius = (minDist + maxDist) / 4;
 
     // Draw main wireframe sphere
     this.sphere = document.createElement('a-entity');
@@ -85,7 +85,7 @@ AFRAME.registerComponent('orbit-path-visualizer', {
       minTorus.setAttribute('geometry', {
         primitive: 'torus',
         radius: minR,
-        tube: 0.01 * radius,
+        tube: 0.001 * radius,
         segmentsRadial: this.data.segmentsWidth,
         segmentsTubular: 8
       });
@@ -105,7 +105,7 @@ AFRAME.registerComponent('orbit-path-visualizer', {
       maxTorus.setAttribute('geometry', {
         primitive: 'torus',
         radius: maxR,
-        tube: 0.01 * radius,
+        tube: 0.001 * radius,
         segmentsRadial: this.data.segmentsWidth,
         segmentsTubular: 8
       });

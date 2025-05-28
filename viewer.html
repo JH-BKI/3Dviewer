@@ -44,7 +44,7 @@
                     // Add camera-utils to the scene
                     scene.setAttribute('camera-utils', '');
                     // Reset camera using the new component
-                    window.cameraUtils.resetCamera();
+                    ResetCameraAllValues(45, 0);
                 });
             }
         });
@@ -105,7 +105,7 @@
           <i class="fa-solid fa-expand maximise-view" aria-hidden="true" style="display:block;"></i>
           </button>
 
-          <button class="button is-medium is-link tooltip is-tooltip-right overlay-buttons" data-tooltip="Reset view" id="reset-camera" aria-label="Reset camera view">
+          <button class="button is-medium is-link tooltip is-tooltip-right overlay-buttons" data-tooltip="Reset view" id="reset-camera" aria-label="Reset camera view" onclick="ResetCameraAllValues(45, 0)">
             <i class="fa-solid fa-sync-alt" aria-hidden="true"></i>
           </button>      
 
@@ -324,20 +324,17 @@
           
           <a-entity id="camera" camera look-controls="enabled: false" 
           orbit-controls="target: 0 0 0; 
-          minPolarAngle: 0;  
+          minPolarAngle: -180;  
           maxPolarAngle: 180;
-                              minAzimuthAngle: -180; 
-                              maxAzimuthAngle: 180; 
-                              minDistance: 0.1; 
-                              maxDistance: 1; 
-                              initialPosition: 0 0 1; 
-                              rotateSpeed: 0.5; 
-                              enablePan: true;
-                              enableDamping: true;
-                              dampingFactor: 0.1;
-                              enableRotate: true;
-                              enableZoom: true;"
-              orbit-controls-patch="initialAzimuthalAngle: 0;"
+          minDistance: 0.01; 
+          maxDistance: 0.085; 
+          initialPosition: 0 0 0; 
+          rotateSpeed: 0.5; 
+          enablePan: true;
+          enableDamping: true;
+          dampingFactor: 0.1;
+          enableRotate: true;
+          enableZoom: true;"
               onboarding-guide="
                   message: 'Click/touch and swipe to explore';
                   imageUrl: ''./assets/images/onboarding-rotate.gif';
@@ -419,6 +416,177 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+
+function ResetCameraAllValues(polar, azimuthal){
+  setAzimuthalAngle(azimuthal);
+  setPolarAngle(polar);
+  setZoomLevel(0.085)
+  updateOrbitTarget("0 0 0");
+}
+
+function setAzimuthalAngle(azimuthal) {
+  const cameraEl = document.querySelector('#camera');
+  if (!cameraEl) {
+    console.error('Camera entity not found.');
+    return;
+  }
+
+  const orbitControlsComponent = cameraEl.components['orbit-controls'];
+  if (!orbitControlsComponent) {
+    console.error('Orbit controls not initialized.');
+    return;
+  }
+
+  const controls = orbitControlsComponent.controls;
+  if (!controls || !controls.target) {
+    console.error("Orbit controls not ready.");
+    return;
+  }
+
+  // Create spherical if missing
+  if (!controls.spherical) {
+    controls.spherical = new THREE.Spherical().setFromVector3(
+      controls.object.position.clone().sub(controls.target)
+    );
+  }
+
+  // Set the azimuthal angle (theta) in radians — 0 means "facing down -Z"
+  controls.spherical.theta = azimuthal;
+
+  // Refresh camera position from spherical coordinates
+  const offset = new THREE.Vector3().setFromSpherical(controls.spherical);
+  controls.object.position.copy(controls.target).add(offset);
+  controls.object.lookAt(controls.target);
+
+  // Reset internal deltas and update
+  if (controls.sphericalDelta) controls.sphericalDelta.set(0, 0, 0);
+  controls.enableRotate = true;
+  controls.update();
+}
+
+function setPolarAngle(polar) {
+    const cameraEl = document.querySelector('#camera');
+    const orbitControlsComponent = cameraEl.components['orbit-controls'];
+    const controls = orbitControlsComponent.controls;
+
+    // Ensure controls and their target spherical object are available
+    if (!controls || !controls.target) {
+      console.error("Orbit controls not ready.");
+      return;
+    }
+
+    // TEMP: Create spherical if missing (some A-Frame builds don't expose it directly)
+    if (!controls.spherical) {
+      controls.spherical = new THREE.Spherical().setFromVector3(
+        controls.object.position.clone().sub(controls.target)
+      );
+    }
+
+    // Set the polar angle (in radians)
+    controls.spherical.phi = THREE.MathUtils.degToRad(polar);
+
+    // Refresh camera rotation based on new spherical coords
+    const offset = new THREE.Vector3().setFromSpherical(controls.spherical);
+    controls.object.position.copy(controls.target).add(offset);
+    controls.object.lookAt(controls.target);
+    
+    // Reset internal deltas and state
+    if (controls.sphericalDelta) controls.sphericalDelta.set(0, 0, 0);
+    controls.enableRotate = true;
+    controls.update();
+}
+
+function setZoomLevel(zoomDistance = 5) {
+  const cameraEl = document.querySelector('#camera');
+  const orbitControlsComponent = cameraEl.components['orbit-controls'];
+
+  if (!cameraEl || !orbitControlsComponent) {
+    console.error('Camera or orbit controls not found.');
+    return;
+  }
+
+  const controls = orbitControlsComponent.controls;
+  if (!controls || !controls.target) {
+    console.error('Orbit controls not ready.');
+    return;
+  }
+
+  // Create spherical if missing
+  if (!controls.spherical) {
+    controls.spherical = new THREE.Spherical().setFromVector3(
+      controls.object.position.clone().sub(controls.target)
+    );
+  }
+
+  // Set zoom (distance from target)
+  controls.spherical.radius = zoomDistance;
+
+  // Update camera position
+  const offset = new THREE.Vector3().setFromSpherical(controls.spherical);
+  controls.object.position.copy(controls.target).add(offset);
+  controls.object.lookAt(controls.target);
+
+  // Clear deltas and update
+  if (controls.sphericalDelta) controls.sphericalDelta.set(0, 0, 0);
+  controls.update();
+}
+
+function updateOrbitTarget(vectorStr) {
+  const cameraEl = document.getElementById('camera');
+  if (!cameraEl) {
+    console.error('Camera entity not found.');
+    return;
+  }
+
+  const orbitComponent = cameraEl.components['orbit-controls'];
+  if (!orbitComponent) {
+    console.error('Orbit controls not initialized.');
+    return;
+  }
+
+  const coords = vectorStr.trim().split(' ').map(Number);
+  if (coords.length !== 3 || coords.some(isNaN)) {
+    console.error('Invalid vector string format. Expected "x y z" numbers.');
+    return;
+  }
+
+  // Update component data (A-Frame attribute binding)
+  cameraEl.setAttribute('orbit-controls', `target: ${vectorStr}`);
+
+  // Update Three.js object directly to reflect the change immediately
+  orbitComponent.controls.target.set(coords[0], coords[1], coords[2]);
+  orbitComponent.controls.update();
+}
+
+function updateInitialPosition(vectorStr) {
+  const cameraEl = document.getElementById('camera');
+  if (!cameraEl) {
+    console.error('Camera entity not found.');
+    return;
+  }
+
+  const orbitComponent = cameraEl.components['orbit-controls'];
+  if (!orbitComponent) {
+    console.error('Orbit controls not initialized.');
+    return;
+  }
+
+  const coords = vectorStr.trim().split(' ').map(Number);
+  if (coords.length !== 3 || coords.some(isNaN)) {
+    console.error('Invalid vector string format. Expected "x y z" numbers.');
+    return;
+  }
+
+  // Update component data (A-Frame attribute binding)
+  cameraEl.setAttribute('orbit-controls', `initialPosition: ${vectorStr}`);
+
+  // Update Three.js object directly to reflect the change immediately
+  orbitComponent.controls.initialPosition.set(coords[0], coords[1], coords[2]);
+  orbitComponent.controls.update();
+}
+
+
+
 async function loadModelConfig() {
   const response = await fetch('./core/data/data.json');
   modelConfig = await response.json();
@@ -449,97 +617,9 @@ async function loadModelByIndex(idx) {
 
   // Wait for model to load before updating camera/controls
   entity.addEventListener('model-loaded', () => {
-    // Compute bounding box center for the loaded model
-    let target = { x: 0, y: 0, z: 0 };
-    const mesh = entity.getObject3D('mesh');
-    if (mesh) {
-      const box = new THREE.Box3().setFromObject(mesh);
-      const center = new THREE.Vector3();
-      box.getCenter(center);
-      target = { x: center.x, y: center.y, z: center.z };
-      console.log('Computed model center for orbit target:', target);
-    }
+    // Reset camera using the new method
+    ResetCameraAllValues(45, 0);
 
-    // Build the new orbit-controls config object
-    const ocfg = model.orbitControls;
-    const orbitConfig = {
-      target: `${target.x} ${target.y} ${target.z}`,
-      minPolarAngle: ocfg.minPolarAngle || 0,
-      maxPolarAngle: ocfg.maxPolarAngle || 180,
-      minAzimuthAngle: ocfg.minAzimuthAngle || -180,
-      maxAzimuthAngle: ocfg.maxAzimuthAngle || 180,
-      minDistance: ocfg.minDistance || 0.1,
-      maxDistance: ocfg.maxDistance || 2,
-      rotateSpeed: ocfg.rotateSpeed || 0.5,
-      enablePan: ocfg.enablePan !== undefined ? ocfg.enablePan : true,
-      enableDamping: ocfg.enableDamping !== undefined ? ocfg.enableDamping : true,
-      dampingFactor: ocfg.dampingFactor || 0.1,
-      enableRotate: ocfg.enableRotate !== undefined ? ocfg.enableRotate : true,
-      enableZoom: ocfg.enableZoom !== undefined ? ocfg.enableZoom : true,
-      zoomSpeed: ocfg.zoomSpeed || 1
-    };
-
-    // Set the full config on the camera
-    const camera = document.querySelector('[camera]');
-    camera.setAttribute('orbit-controls', orbitConfig);
-
-    // Reset camera (forces controls to update)
-    if (window.cameraUtils) window.cameraUtils.resetCamera();
-
-    // Clamp a value between min and max
-    function clamp(val, min, max) {
-      return Math.max(min, Math.min(max, val));
-    }
-    const minPolar = ocfg.minPolarAngle !== undefined ? ocfg.minPolarAngle : 0;
-    const maxPolar = ocfg.maxPolarAngle !== undefined ? ocfg.maxPolarAngle : 180;
-    const minAzimuth = ocfg.minAzimuthAngle !== undefined ? ocfg.minAzimuthAngle : -180;
-    const maxAzimuth = ocfg.maxAzimuthAngle !== undefined ? ocfg.maxAzimuthAngle : 180;
-
-    // Force polar angle to 45 for testing
-    let polar = 45;
-    let azimuthal = ocfg.azimuthalAngle !== undefined ? ocfg.azimuthalAngle : 0;
-
-    // Clamp to allowed range
-    const clampedPolar = clamp(polar, minPolar, maxPolar);
-    const clampedAzimuthal = clamp(azimuthal, minAzimuth, maxAzimuth);
-
-    if (polar !== clampedPolar) {
-      console.warn(`Requested polarAngle ${polar} out of range [${minPolar}, ${maxPolar}]. Clamped to ${clampedPolar}.`);
-    }
-    if (azimuthal !== clampedAzimuthal) {
-      console.warn(`Requested azimuthalAngle ${azimuthal} out of range [${minAzimuth}, ${maxAzimuth}]. Clamped to ${clampedAzimuthal}.`);
-    }
-
-    const orbit = camera.components['orbit-controls'];
-    const patch = camera.components['orbit-controls-patch'];
-    if (patch) {
-      patch.el.setAttribute('orbit-controls-patch', 'initialAzimuthalAngle', clampedAzimuthal);
-      patch.el.setAttribute('orbit-controls-patch', 'initialPolarAngle', clampedPolar);
-      patch.patchOrbitControls();
-    }
-    // Ensure orbit controls are properly initialized
-    if (orbit && orbit.controls) {
-      orbit.controls.update();
-      camera.setAttribute('orbit-controls', 'enableRotate', true);
-      // Force a camera position update
-      const threeCamera = camera.getObject3D('camera');
-      if (threeCamera) {
-        const pos = threeCamera.position;
-        camera.setAttribute('position', `${pos.x} ${pos.y} ${pos.z}`);
-      }
-      // Force update of orbit controls with initial angles
-      if (orbit.controls.setAzimuthalAngle && orbit.controls.setPolarAngle) {
-        const azimuthalAngle = THREE.MathUtils.degToRad(clampedAzimuthal);
-        const polarAngle = THREE.MathUtils.degToRad(clampedPolar);
-        orbit.controls.setAzimuthalAngle(azimuthalAngle);
-        orbit.controls.setPolarAngle(polarAngle);
-        orbit.controls.update();
-      }
-      // Debug log
-      console.log('Set azimuthal:', clampedAzimuthal, 'Set polar:', clampedPolar);
-      console.log('Actual azimuthal (deg):', THREE.MathUtils.radToDeg(orbit.controls.getAzimuthalAngle()));
-      console.log('Actual polar (deg):', THREE.MathUtils.radToDeg(orbit.controls.getPolarAngle()));
-    }
     // Add hotspots
     if (model.hotspots) {
       model.hotspots.forEach(hotspot => {

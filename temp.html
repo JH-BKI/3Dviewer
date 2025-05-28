@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>3D Model Viewer</title>
+    <script src="./core/js/pkg/aframe.min.js"></script> <!-- https://aframe.io/releases/1.7.0/aframe.min.js -->
+    <script src="./core/js/pkg/aframe-orbit-controls.min.js"></script> <!-- https://unpkg.com/aframe-orbit-controls@1.3.2/dist/aframe-orbit-controls.min.js -->
+    <script src="./core/js/debug.js"></script>
+    <script src="./core/js/components/spatial-hotspot.js"></script>
+    <script src="./core/js/components/camera-utils.js"></script>
+    <script src="./core/js/mixins/rotation-visualizer.js"></script>
+    <script src="./core/js/components/orbit-controls-patch.js"></script>
+    <script src="./core/js/components/onboarding-guide.js"></script>
+    <script src="./core/js/components/ui-overlay.js"></script>
+    <script src="./core/js/components/orbit-path-visualizer.js"></script>
+
+    <link rel="stylesheet" href="./core/css/pkg/bulma.min.css"> <!-- https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css -->
+    <link rel="stylesheet" href="./core/css/pkg/bulma-tooltip.min.css"> <!-- https://cdn.jsdelivr.net/npm/bulma-tooltip@2.0.2/dist/css/bulma-tooltip.min.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"> <!-- https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css -->
+    <link rel="stylesheet" href="./core/css/styles.css">
+</head>
+<body>
+ 
+  </head>
+  
+  <body>
+
+
+
+ 
+
+
+
+    <a-scene
+      
+      xr-mode-ui="enabled: false"
+      cursor="rayOrigin: mouse; fuse: false"
+      raycaster="objects: [cursor-listener]"
+      camera-utils
+      >
+
+      <a-entity ui-overlay></a-entity>
+        <a-assets>
+            <a-asset-item id="modelSubject1" src="./assets/3d/colgateboxcomplete.glb"></a-asset-item>
+            <a-asset-item id="modelSubject2" src="./assets/3d/tube.glb"></a-asset-item>
+            <a-asset-item id="modelSubject3" src="./assets/3d/tubebox.glb"></a-asset-item>
+            <a-asset-item id="modelSubject4" src="./assets/3d/singledose.glb"></a-asset-item>
+            <img id="sceneBg" src="./assets/images/scene-background.jpg" alt="Scene background">
+        </a-assets>
+        
+        <a-sky src="#sceneBg" rotation="0 0 0"></a-sky>
+
+        <!-- <a-box 
+        position="0.1 0.1 0" 
+        scale="0.01 0.01 0.01" 
+        color="#ff0000"></a-box>  -->
+
+
+
+          <a-light type="ambient" color="#ffffff" intensity="0.65"></a-light>
+          <a-light type="directional" color="#fff" intensity="1" position="3.3 4 1.5"></a-light>
+          <a-light type="directional" color="#fff" intensity="1" position="-3.3 4 -1.5"></a-light>
+          <a-light type="directional" color="#fff" intensity="1.5" position="0 4 3.3"></a-light>
+          
+          
+          <a-entity gltf-model="#modelSubject2" position="0 0 0" rotation="90 0 0" scale="1 1 1"></a-entity>
+          
+          <a-entity id="camera" camera look-controls="enabled: false" 
+          orbit-controls="target: 0 0 0; 
+                        minPolarAngle: -180;  
+                        maxPolarAngle: 180;
+                        minDistance: 0.01; 
+                        maxDistance: 0.075; 
+                        initialPosition: 0 0 0; 
+                        rotateSpeed: 0.5; 
+                        enablePan: true;
+                        enableDamping: true;
+                        dampingFactor: 0.1;
+                        enableRotate: true;
+                        enableZoom: true;"
+                        >
+          </a-entity>
+          
+          <!-- <a-entity id="camera" camera
+          orbit-controls="target: 0 0 0; minPolarAngle: 0; maxPolarAngle: 180; minAzimuthAngle: -180; maxAzimuthAngle: 180; minDistance: 0.1; maxDistance: 2; initialPosition: 0 0 0; rotateSpeed: 0.5; enablePan: true; enableDamping: true; dampingFactor: 0.1; enableRotate: true; enableZoom: true;">
+        </a-entity> -->
+
+      <!-- Orbit path visualizer -->
+      <!-- <a-entity orbit-path-visualizer></a-entity> -->
+
+    </a-scene>
+  
+  
+  
+  
+  
+  </body>
+  </html>
+
+<script>
+// Model dropdown and config logic
+let modelConfig = null;
+let currentModelEntity = null;
+let currentHotspots = [];
+
+// --- Unlimited azimuthal orbit fix ---
+document.addEventListener('DOMContentLoaded', () => {
+  const camera = document.querySelector('[camera]');
+  camera.addEventListener('componentinitialized', function handler(e) {
+    if (e.detail.name === 'orbit-controls') {
+      const controls = camera.components['orbit-controls'].controls;
+      if (controls) {
+        controls.minAzimuthAngle = -Infinity;
+        controls.maxAzimuthAngle = Infinity;
+      }
+      camera.removeEventListener('componentinitialized', handler);
+    }
+  });
+
+  // Set up model selector button click handlers
+  const modelButtons = document.querySelectorAll('.model-selector-button');
+  modelButtons.forEach(button => {
+    button.addEventListener('click', async () => {
+      const modelId = button.getAttribute('data-model');
+      if (!modelConfig) {
+        const response = await fetch('./core/data/data.json');
+        modelConfig = await response.json();
+      }
+      const modelIndex = modelConfig.models.findIndex(m => m.id === modelId);
+      if (modelIndex !== -1) {
+        loadModelByIndex(modelIndex);
+        // Hide the model selector modal
+        const selectorContainer = document.querySelector('.model-selector-container');
+        if (selectorContainer) {
+          selectorContainer.style.display = 'none';
+        }
+      }
+    });
+  });
+
+  // Set up cancel button click handler
+  const cancelButton = document.getElementById('cancel-model-selector-button');
+  if (cancelButton) {
+    cancelButton.addEventListener('click', () => {
+      const selectorContainer = document.querySelector('.model-selector-container');
+      if (selectorContainer) {
+        selectorContainer.style.display = 'none';
+      }
+    });
+  }
+});
+
+async function loadModelConfig() {
+  const response = await fetch('./core/data/data.json');
+  modelConfig = await response.json();
+}
+
+async function loadModelByIndex(idx) {
+  const model = modelConfig.models[idx];
+  if (!model) return;
+  // Remove previous model entity
+  if (currentModelEntity) {
+    currentModelEntity.parentNode.removeChild(currentModelEntity);
+    currentModelEntity = null;
+  }
+  // Remove previous hotspots
+  currentHotspots.forEach(h => h.parentNode.removeChild(h));
+  currentHotspots = [];
+  // Add new model entity
+  const scene = document.querySelector('a-scene');
+  const entity = document.createElement('a-entity');
+  entity.setAttribute('gltf-model', `assets/3d/${model.filename}`);
+  const pos = model.modelPosition || { x: 0, y: 0, z: 0 };
+  const rot = model.modelRotation || { x: 0, y: 0, z: 0 };
+  entity.setAttribute('position', `${pos.x} ${pos.y} ${pos.z}`);
+  entity.setAttribute('rotation', `${rot.x} ${rot.y} ${rot.z}`);
+  entity.setAttribute('scale', '1 1 1');
+  scene.appendChild(entity);
+  currentModelEntity = entity;
+
+  // Wait for model to load before updating camera/controls
+  entity.addEventListener('model-loaded', () => {
+    // Compute bounding box center for the loaded model
+    let target = { x: 0, y: 0, z: 0 };
+    const mesh = entity.getObject3D('mesh');
+    if (mesh) {
+      const box = new THREE.Box3().setFromObject(mesh);
+      const center = new THREE.Vector3();
+      box.getCenter(center);
+      target = { x: center.x, y: center.y, z: center.z };
+      console.log('Computed model center for orbit target:', target);
+    }
+
+    // Build the new orbit-controls config object
+    const ocfg = model.orbitControls;
+    const orbitConfig = {
+      target: `${target.x} ${target.y} ${target.z}`,
+      minPolarAngle: ocfg.minPolarAngle || 0,
+      maxPolarAngle: ocfg.maxPolarAngle || 180,
+      minAzimuthAngle: ocfg.minAzimuthAngle || -180,
+      maxAzimuthAngle: ocfg.maxAzimuthAngle || 180,
+      minDistance: ocfg.minDistance || 0.1,
+      maxDistance: ocfg.maxDistance || 2,
+      rotateSpeed: ocfg.rotateSpeed || 0.5,
+      enablePan: ocfg.enablePan !== undefined ? ocfg.enablePan : true,
+      enableDamping: ocfg.enableDamping !== undefined ? ocfg.enableDamping : true,
+      dampingFactor: ocfg.dampingFactor || 0.1,
+      enableRotate: ocfg.enableRotate !== undefined ? ocfg.enableRotate : true,
+      enableZoom: ocfg.enableZoom !== undefined ? ocfg.enableZoom : true,
+      zoomSpeed: ocfg.zoomSpeed || 1
+    };
+
+    // Set the full config on the camera
+    const camera = document.querySelector('[camera]');
+    camera.setAttribute('orbit-controls', orbitConfig);
+
+    // Reset camera (forces controls to update)
+    if (window.cameraUtils) window.cameraUtils.resetCamera();
+
+    // Clamp a value between min and max
+    function clamp(val, min, max) {
+      return Math.max(min, Math.min(max, val));
+    }
+    const minPolar = ocfg.minPolarAngle !== undefined ? ocfg.minPolarAngle : 0;
+    const maxPolar = ocfg.maxPolarAngle !== undefined ? ocfg.maxPolarAngle : 180;
+    const minAzimuth = ocfg.minAzimuthAngle !== undefined ? ocfg.minAzimuthAngle : -180;
+    const maxAzimuth = ocfg.maxAzimuthAngle !== undefined ? ocfg.maxAzimuthAngle : 180;
+
+    // Force polar angle to 45 for testing
+    let polar = 45;
+    let azimuthal = ocfg.azimuthalAngle !== undefined ? ocfg.azimuthalAngle : 0;
+
+    // Clamp to allowed range
+    const clampedPolar = clamp(polar, minPolar, maxPolar);
+    const clampedAzimuthal = clamp(azimuthal, minAzimuth, maxAzimuth);
+
+    if (polar !== clampedPolar) {
+      console.warn(`Requested polarAngle ${polar} out of range [${minPolar}, ${maxPolar}]. Clamped to ${clampedPolar}.`);
+    }
+    if (azimuthal !== clampedAzimuthal) {
+      console.warn(`Requested azimuthalAngle ${azimuthal} out of range [${minAzimuth}, ${maxAzimuth}]. Clamped to ${clampedAzimuthal}.`);
+    }
+
+    const orbit = camera.components['orbit-controls'];
+    const patch = camera.components['orbit-controls-patch'];
+    if (patch) {
+      patch.el.setAttribute('orbit-controls-patch', 'initialAzimuthalAngle', clampedAzimuthal);
+      patch.el.setAttribute('orbit-controls-patch', 'initialPolarAngle', clampedPolar);
+      patch.patchOrbitControls();
+    }
+    // Ensure orbit controls are properly initialized
+    if (orbit && orbit.controls) {
+      orbit.controls.update();
+      camera.setAttribute('orbit-controls', 'enableRotate', true);
+      // Force a camera position update
+      const threeCamera = camera.getObject3D('camera');
+      if (threeCamera) {
+        const pos = threeCamera.position;
+        camera.setAttribute('position', `${pos.x} ${pos.y} ${pos.z}`);
+      }
+      // Force update of orbit controls with initial angles
+      if (orbit.controls.setAzimuthalAngle && orbit.controls.setPolarAngle) {
+        const azimuthalAngle = THREE.MathUtils.degToRad(clampedAzimuthal);
+        const polarAngle = THREE.MathUtils.degToRad(clampedPolar);
+        orbit.controls.setAzimuthalAngle(azimuthalAngle);
+        orbit.controls.setPolarAngle(polarAngle);
+        orbit.controls.update();
+      }
+      // Debug log
+      console.log('Set azimuthal:', clampedAzimuthal, 'Set polar:', clampedPolar);
+      console.log('Actual azimuthal (deg):', THREE.MathUtils.radToDeg(orbit.controls.getAzimuthalAngle()));
+      console.log('Actual polar (deg):', THREE.MathUtils.radToDeg(orbit.controls.getPolarAngle()));
+    }
+    // Add hotspots
+    if (model.hotspots) {
+      model.hotspots.forEach(hotspot => {
+        const hs = document.createElement('a-sphere');
+        hs.setAttribute('radius', '0.025');
+        hs.setAttribute('color', '#4CC3D9');
+        hs.setAttribute('cursor-listener', '');
+        hs.setAttribute('class', 'clickable');
+        let hsAttr = `spatial-hotspot=\"isInteractable: true;`;
+        if (hotspot.position) hsAttr += ` position: ${hotspot.position.x} ${hotspot.position.y} ${hotspot.position.z};`;
+        if (hotspot.lookAt) hsAttr += ` lookAt: ${hotspot.lookAt.x} ${hotspot.lookAt.y} ${hotspot.lookAt.z};`;
+        if (hotspot.orbitAzimuth !== undefined) hsAttr += ` orbitAzimuth: ${hotspot.orbitAzimuth};`;
+        if (hotspot.orbitElevation !== undefined) hsAttr += ` orbitElevation: ${hotspot.orbitElevation};`;
+        if (hotspot.orbitDistance !== undefined) hsAttr += ` orbitDistance: ${hotspot.orbitDistance};`;
+        if (hotspot.label) hsAttr += ` label: '${hotspot.label}';`;
+        if (hotspot.title) hsAttr += ` title: '${hotspot.title}';`;
+        if (hotspot.duration) hsAttr += ` duration: ${hotspot.duration};`;
+        hsAttr += '\"';
+        hs.setAttribute('spatial-hotspot', hsAttr);
+        scene.appendChild(hs);
+        currentHotspots.push(hs);
+      });
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', loadModelConfig);
+</script>
+</script>
