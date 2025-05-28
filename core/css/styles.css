@@ -1,0 +1,184 @@
+nav#navbarBottom {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* Fade In Animation */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.fade-in {
+  animation: fadeIn 0.4s ease forwards;
+  pointer-events: auto;
+}
+
+/* Fade Out Animation */
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+.fade-out {
+  animation: fadeOut 0.4s ease forwards;
+  pointer-events: none;
+}
+
+.ui-container {
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    z-index: 2;
+    pointer-events: none;
+    
+}
+a-scene {
+    z-index: 1;
+}
+
+.pre-fade {
+  opacity: 0;
+}
+
+.overlay-buttons {
+    position: fixed;
+    top: 1rem;
+    width: 3rem;
+    height: 3rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 2;
+
+}
+
+#general-info-toggle {
+    left: 1rem;
+    
+}
+
+#fullscreen-toggle {
+    right: 1rem;
+}
+
+#reset-camera {
+    left: 1rem;
+    top: 6rem;
+}
+
+
+#zoomDisplay {
+    text-align: center;
+    width: 100px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    margin: 1rem;
+    font-size: 2rem;
+    padding: 1rem 0.5rem;
+    background: rgba(255, 255, 255, 0.35);
+    margin-top: -50px;
+    margin-left: -50px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 2;
+}
+
+.buttons-container, .instructions-container, .model-selector-container {
+    display: none;
+    opacity: 0;
+}
+
+.model-selector-container {
+    z-index: 3;
+}
+
+.button.model-selector-button
+{
+    width: 100%;
+    height: 14rem;
+}
+
+
+.loading-container {
+    z-index: 3;
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    pointer-events: none;
+    background: rgba(0, 0, 0, 0.75);
+}
+
+.loading-container > p {
+    position: absolute;
+    top: 59%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+}
+
+#loading-outer {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+#loading-outer>div {
+		display: inline-block;
+		-webkit-text-stroke: 1px #fff;
+		text-stroke: 1px #fff;
+	}
+	#loading-inner {
+		position: relative;
+		height: 64px;
+		width: 64px;
+		top: -2px;
+		display: inline-block;
+		perspective: 1000px;
+		transform-style: preserve-3d;
+		animation-name: cuberota;
+		animation-duration: 20s;
+		animation-iteration-count: infinite;
+		animation-timing-function: linear;
+    }
+	#loading-inner>div {
+        position: absolute;
+        display: block;
+        top: 0;
+        left: 0;
+        height: 64px;
+        width: 64px;
+        border: 1px solid #333;
+        backface-visibility: visible;
+
+		}
+
+		#back {
+			transform: rotateY(180deg) translateZ(-64px);
+            background: rgba(0, 147, 144,0.75);
+		}
+		#top {
+			transform: rotateX(90deg) translate3d(0,32px,32px);
+            background: rgba(146, 39, 143,0.75);
+		}
+		#bottom {
+			transform: rotateX(-90deg) translate3d(0,-32px,32px);
+            background: rgba(0, 121, 194,0.75);
+		}
+		#left {
+			transform: rotateY(-90deg) translate3d(32px, 0, 32px);
+            background: rgba(236, 0, 140,0.75);
+		}
+		#right {
+			transform: rotateY(90deg) translate3d(-32px, 0, 32px);
+            background: rgba(253, 184, 19,0.75);
+		}
+	
+	@keyframes cuberota {
+		0% {
+			transform-style: preserve-3d;
+			transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg) translateZ(-32px);
+		}
+		100% {
+			transform-style: preserve-3d;
+			transform: rotateX(720deg) rotateY(1440deg) rotateZ(360deg) translateZ(-32px);
+		}
+	}

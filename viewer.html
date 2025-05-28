@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>3D Model Viewer</title>
+    <script src="./core/js/pkg/aframe.min.js"></script> <!-- https://aframe.io/releases/1.7.0/aframe.min.js -->
+    <script src="./core/js/pkg/aframe-orbit-controls.min.js"></script> <!-- https://unpkg.com/aframe-orbit-controls@1.3.2/dist/aframe-orbit-controls.min.js -->
+    <script src="./core/js/debug.js"></script>
+    <script src="./core/js/components/spatial-hotspot.js"></script>
+    <script src="./core/js/components/camera-utils.js"></script>
+    <script src="./core/js/mixins/rotation-visualizer.js"></script>
+    <script src="./core/js/components/orbit-controls-patch.js"></script>
+    <script src="./core/js/components/onboarding-guide.js"></script>
+    <script src="./core/js/components/ui-overlay.js"></script>
+
+    <link rel="stylesheet" href="./core/css/pkg/bulma.min.css"> <!-- https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css -->
+    <link rel="stylesheet" href="./core/css/pkg/bulma-tooltip.min.css"> <!-- https://cdn.jsdelivr.net/npm/bulma-tooltip@2.0.2/dist/css/bulma-tooltip.min.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"> <!-- https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css -->
+    <link rel="stylesheet" href="./core/css/styles.css">
+</head>
+<body>
+    <script>
+        function DeviceActivate() {           
+            const expandIcon = document.querySelector('.fa-expand');
+            const compressIcon = document.querySelector('.fa-compress');
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+                expandIcon.style.display = 'none';
+                compressIcon.style.display = 'inline-block';
+            } else {
+                document.exitFullscreen();
+                expandIcon.style.display = 'inline-block';
+                compressIcon.style.display = 'none';
+            }
+        }
+
+        // Wait for both DOM and A-Frame to be ready
+        document.addEventListener('DOMContentLoaded', () => {
+            const scene = document.querySelector('a-scene');
+            if (scene) {
+                scene.addEventListener('loaded', () => {
+                    initDebug();
+                    // Add camera-utils to the scene
+                    scene.setAttribute('camera-utils', '');
+                    // Reset camera using the new component
+                    window.cameraUtils.resetCamera();
+                });
+            }
+        });
+    </script>
+  </head>
+  
+  <body>
+
+
+
+    <!-- <nav id="navbarBottom" class="navbar is-fixed-bottom has-shadow">
+        <div id="navbarExample" class="navbar-brand">
+          <div class="navbar-start">
+            <div class="navbar-item">
+                <button class="button is-light" onclick="window.cameraUtils.resetCamera()">
+                    <span class="icon">
+                        <i class="fas fa-sync-alt"></i>
+                    </span>
+                    <span>Reset View</span>
+                </button>
+            </div>
+            <div class="navbar-item">
+                <div class="select">
+                    <select id="modelDropdown">
+                        <option>Loading models...</option>
+                    </select>
+                </div>
+            </div>
+            <div class="navbar-item">
+                <p>3D Model Viewer</p>              
+           </div>
+          </div>
+        </div>
+      </nav> -->
+
+      <div class="ui-container">  
+        
+        <div class="loading-container">
+          <div id="loading-outer">
+            <div id="loading-inner">
+              <div id="back"></div>
+              <div id="top"></div>
+              <div id="bottom"></div>
+              <div id="left"></div>
+              <div id="right"></div>
+            </div>
+          </div>
+          <p class="is-size-4">LOADING...</p>
+        </div>
+
+        <div class="buttons-container">
+          <button class="button is-medium is-link tooltip is-tooltip-right overlay-buttons" data-tooltip="Model selector" id="general-info-toggle" aria-label="Toggle Model selector">
+          <i class="fa-solid fa-question fa-beat" aria-hidden="true" style="--fa-animation-duration: 2s; --fa-beat-scale: 1.2;"></i>
+          </button>      
+
+          <button class="button is-medium is-link tooltip is-tooltip-left overlay-buttons" data-tooltip="Go fullscreen" id="fullscreen-toggle" aria-label="Fullscreen view">
+          <i class="fa-solid fa-compress minimise-view" aria-hidden="true" style="display:none;"></i>
+          <i class="fa-solid fa-expand maximise-view" aria-hidden="true" style="display:block;"></i>
+          </button>
+
+          <button class="button is-medium is-link tooltip is-tooltip-right overlay-buttons" data-tooltip="Reset view" id="reset-camera" aria-label="Reset camera view">
+            <i class="fa-solid fa-sync-alt" aria-hidden="true"></i>
+          </button>      
+
+          <div id="zoomDisplay" class="box" role="status" aria-live="polite">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><BR><span id="zoomValue">0%</span>
+          </div>
+        </div>
+
+
+        <div class="instructions-container">
+          <div class="modal is-active">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+              <header class="modal-card-head">
+                <p class="modal-card-title">How to use this 3D viewer</p>
+              </header>
+              <section class="modal-card-body">
+                  <div class="block">
+                      <p>This experience is compatible with desktop/laptop devices with a mouse/keyboard and mobile/tablet devices using the touchscreen.</p>
+                  </div>
+                  <div class="column">                        
+                      <figure class="image is-16by9">
+                          <img src="/assets/images/basic-controls.gif" alt="basic controls demonstration">
+                      </figure>
+                  </div>
+                  <div class="columns is-desktop">
+                      <div class="column">
+                          <div class="block">
+                              <h5 class="is-size-5">Rotate/move 3D model:</h5>
+                              <ul>
+                                  <li><u>Mouse:</u> Hold down left mouse button and drag</li>
+                                  <li><u>Touchscreen:</u> Touch and drag with your finger</li>
+                              </ul>
+                          </div>
+                      </div>
+                      <div class="column">
+                          <div class="block">
+                              <h5 class="is-size-5">Zoom in/out:</h5>
+                              <ul>
+                                  <li><u>Mouse:</u> Scroll up/down with the middle mousewheel</li>
+                                  <li><u>Touchscreen:</u> Pinch in/out with your fingers</li>
+                              </ul>
+                          </div>
+                      </div>                        
+                  </div>
+                  <div class="block">
+                    <p>Use the Reset View button to center your view of the 3D model.</p>
+                </div>
+              </section>
+              <footer class="modal-card-foot">
+                <div class="buttons">
+                  <button class="button is-medium is-link shared-with-icon">Continue&nbsp;<i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+                </div>
+              </footer>
+            </div>
+          </div>  
+        </div>
+
+        <div class="model-selector-container">
+          <div class="modal is-active">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+              <header class="modal-card-head">
+                <p class="modal-card-title">Choose a 3D model</p>
+              </header>
+              <section class="modal-card-body">
+                  <div class="block">
+                    <p>Select an item below to explore it in the 3D viewer:</p>
+                </div>
+                  <div class="fixed-grid">
+                  <div class="grid">
+                      <div class="cell">
+                        <button class="button model-selector-button" data-model="colgatebox">
+                          <div class="block">
+                              <h5 class="is-size-5">Colgate Box</h5>
+                              <figure class="image is-16by9">
+                                <img src="/assets/images/colgate-box.png" alt="colgate box 3D model">
+                            </figure>
+                          </div>
+                        </button>
+                      </div>
+                      <div class="cell">
+                        <button class="button model-selector-button" data-model="tubebox">
+                          <div class="block">
+                            <h5 class="is-size-5">Duraphat Box</h5>
+                            <figure class="image is-16by9">
+                              <img src="/assets/images/duraphat-box.png" alt="Duraphat box 3D model">
+                          </figure>
+                        </div>
+                        </button>
+                      </div>
+                      <div class="cell">
+                        <button class="button model-selector-button" data-model="tube">
+                          <div class="block">
+                              <h5 class="is-size-5">Duraphat Tube</h5>
+                              <figure class="image is-16by9">
+                            <img src="/assets/images/duraphat-tube.png" alt="Duraphat tube 3D model">
+                          </figure>
+                        </div>
+                      </button>
+                      </div>
+                      <div class="cell">
+                      <button class="button model-selector-button" data-model="singledose">  
+                        <div class="block">
+                          <h5 class="is-size-5">Single Dose</h5>
+                          <figure class="image is-16by9">
+                            <img src="/assets/images/single-dose.png" alt="Single dose 3D model">
+                        </figure>
+                      </div>
+                    </button>
+                    </div>                       
+                  </div>
+                </div>
+              </section>
+              <footer class="modal-card-foot">
+                <div class="buttons">
+                  <button class="button is-medium is-link shared-with-icon" id="cancel-model-selector-button">Cancel &nbsp;<i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+                </div>
+              </footer>
+            </div>
+          </div>  
+        </div>
+      </div>
+
+
+
+    <a-scene
+      
+      xr-mode-ui="enabled: false"
+      cursor="rayOrigin: mouse; fuse: false"
+      raycaster="objects: [cursor-listener]"
+      camera-utils
+      >
+
+      <a-entity ui-overlay></a-entity>
+        <a-assets>
+            <a-asset-item id="modelSubject" src="./assets/3d/colgateboxcomplete.glb"></a-asset-item>
+            <img id="sceneBg" src="./assets/images/scene-background.jpg" alt="Scene background">
+        </a-assets>
+
+
+        
+        
+        
+        <a-sky src="#sceneBg" rotation="0 0 0"></a-sky>
+
+        <!-- Example SpatialHotspot -->
+        <!--
+            You can now use orbit-based camera views:
+            spatial-hotspot="
+                ...
+                lookAt: x y z;
+                orbitAzimuth: 45;         (degrees)
+                orbitElevation: 60;       (degrees)
+                orbitDistance: 1.5;       (meters)
+                ...
+            "
+            This will move the camera to the specified orbit around the lookAt point.
+        -->
+        <!-- <a-sphere 
+            position="-0.2 0.2 0" 
+            radius="0.025" 
+            color="#4CC3D9"
+            cursor-listener
+            class="clickable"
+            spatial-hotspot="
+                isInteractable: true;
+                lookAt: 0.001 0.077 -0.12;
+                orbitAzimuth: 45;
+                orbitElevation: 60;
+                orbitDistance: 0.5;
+                duration: 1000;
+                isTrigger: true;
+                title: 'Example Orbit Hotspot';
+                titleOffset: 0 0.2 0;
+                label: 'Click to orbit';
+                labelOffset: 0 0.1 0;
+                drawLine: true;
+                lineStyle: color: #4CC3D9; style: solid; opacity: 0.5; width: 4
+            ">
+        </a-sphere>
+
+
+  
+
+        <a-box 
+        position="0.1 0.1 0" 
+        scale="0.01 0.01 0.01" 
+        color="#ff0000"></a-box> -->
+
+        <!-- Example rotation visualizer -->
+        <!-- <a-entity 
+            position="0.2 0.1 -0.1"
+            cursor-listener
+            class="clickable"
+            rotation-visualizer="
+                size: 0.025;
+                indicatorLength: 0.035;
+                indicatorWidth: 0.01;
+                cubeColor: #FFFFFF;
+                indicatorColor: #FF0000;
+            ">
+        </a-entity> -->
+
+        <!-- Add VR hands -->
+        <a-entity id="leftHand" oculus-touch-controls="hand: left"></a-entity>
+        <a-entity id="rightHand" oculus-touch-controls="hand: right"></a-entity>
+
+          <a-light type="ambient" color="#ffffff" intensity="0.65"></a-light>
+          <a-light type="directional" color="#fff" intensity="1" position="3.3 4 1.5"></a-light>
+          <a-light type="directional" color="#fff" intensity="1" position="-3.3 4 -1.5"></a-light>
+          <a-light type="directional" color="#fff" intensity="1.5" position="0 4 3.3"></a-light>
+          
+          
+          <!-- <a-entity gltf-model="#modelSubject" position="0 0 0" scale="1 1 1"></a-entity> -->
+          
+          
+          <a-entity id="camera" camera look-controls="enabled: false" 
+              orbit-controls="target: 0 0 0; 
+                              minPolarAngle: 0;  
+                              maxPolarAngle: 180;
+                              minAzimuthAngle: -Infinity; 
+                              maxAzimuthAngle: Infinity; 
+                              minDistance: 0.1; 
+                              maxDistance: 1; 
+                              initialPosition: 0 0 1; 
+                              rotateSpeed: 0.5; 
+                              enablePan: true;
+                              enableDamping: true;
+                              dampingFactor: 0.1;
+                              enableRotate: true;
+                              enableZoom: true;"
+              orbit-controls-patch="initialAzimuthalAngle: 0;"
+              onboarding-guide="
+                  message: 'Click/touch and swipe to explore';
+                  imageUrl: ''./assets/images/onboarding-rotate.gif';
+                  amplitude: 5;
+                  speed: 0.25;
+                  loops: 1.5;
+                  initialDelay: 250;
+                  cooldown: 10000;
+                  idleOrbit: true;
+                  idleOrbitSpeed: 5;">
+          </a-entity>
+      
+    </a-scene>
+  
+  
+  
+  
+  
+  </body>
+  </html>
+
+<script>
+// Model dropdown and config logic
+let modelConfig = null;
+let currentModelEntity = null;
+let currentHotspots = [];
+
+// --- Unlimited azimuthal orbit fix ---
+document.addEventListener('DOMContentLoaded', () => {
+  const camera = document.querySelector('[camera]');
+  camera.addEventListener('componentinitialized', function handler(e) {
+    if (e.detail.name === 'orbit-controls') {
+      const controls = camera.components['orbit-controls'].controls;
+      if (controls) {
+        controls.minAzimuthAngle = -Infinity;
+        controls.maxAzimuthAngle = Infinity;
+      }
+      camera.removeEventListener('componentinitialized', handler);
+    }
+  });
+
+  // Set up model selector button click handlers
+  const modelButtons = document.querySelectorAll('.model-selector-button');
+  modelButtons.forEach(button => {
+    button.addEventListener('click', async () => {
+      const modelId = button.getAttribute('data-model');
+      if (!modelConfig) {
+        const response = await fetch('./core/data/data.json');
+        modelConfig = await response.json();
+      }
+      const modelIndex = modelConfig.models.findIndex(m => m.id === modelId);
+      if (modelIndex !== -1) {
+        loadModelByIndex(modelIndex);
+        // Hide the model selector modal
+        const selectorContainer = document.querySelector('.model-selector-container');
+        if (selectorContainer) {
+          selectorContainer.style.display = 'none';
+        }
+      }
+    });
+  });
+
+  // Set up cancel button click handler
+  const cancelButton = document.getElementById('cancel-model-selector-button');
+  if (cancelButton) {
+    cancelButton.addEventListener('click', () => {
+      const selectorContainer = document.querySelector('.model-selector-container');
+      if (selectorContainer) {
+        selectorContainer.style.display = 'none';
+      }
+    });
+  }
+});
+
+async function loadModelConfig() {
+  const response = await fetch('./core/data/data.json');
+  modelConfig = await response.json();
+}
+
+async function loadModelByIndex(idx) {
+  const model = modelConfig.models[idx];
+  if (!model) return;
+  // Remove previous model entity
+  if (currentModelEntity) {
+    currentModelEntity.parentNode.removeChild(currentModelEntity);
+    currentModelEntity = null;
+  }
+  // Remove previous hotspots
+  currentHotspots.forEach(h => h.parentNode.removeChild(h));
+  currentHotspots = [];
+  // Add new model entity
+  const scene = document.querySelector('a-scene');
+  const entity = document.createElement('a-entity');
+  entity.setAttribute('gltf-model', `assets/3d/${model.filename}`);
+  const pos = model.modelPosition || { x: 0, y: 0, z: 0 };
+  const rot = model.modelRotation || { x: 0, y: 0, z: 0 };
+  entity.setAttribute('position', `${pos.x} ${pos.y} ${pos.z}`);
+  entity.setAttribute('rotation', `${rot.x} ${rot.y} ${rot.z}`);
+  entity.setAttribute('scale', '1 1 1');
+  scene.appendChild(entity);
+  currentModelEntity = entity;
+
+  // Set camera/orbit-controls config
+  if (window.cameraUtils && model.orbitControls) {
+    // Create a new config object with all the orbit controls settings
+    const orbitConfig = {
+      target: new THREE.Vector3(
+        model.orbitControls.target?.x || 0,
+        model.orbitControls.target?.y || 0,
+        model.orbitControls.target?.z || 0
+      ),
+      minPolarAngle: THREE.MathUtils.degToRad(model.orbitControls.minPolarAngle || 0),
+      maxPolarAngle: THREE.MathUtils.degToRad(model.orbitControls.maxPolarAngle || 180),
+      minAzimuthAngle: THREE.MathUtils.degToRad(model.orbitControls.minAzimuthAngle || -180),
+      maxAzimuthAngle: THREE.MathUtils.degToRad(model.orbitControls.maxAzimuthAngle || 180),
+      minDistance: model.orbitControls.minDistance || 0.1,
+      maxDistance: model.orbitControls.maxDistance || 1,
+      rotateSpeed: model.orbitControls.rotateSpeed || 0.5,
+      enablePan: model.orbitControls.enablePan !== undefined ? model.orbitControls.enablePan : true,
+      enableDamping: model.orbitControls.enableDamping !== undefined ? model.orbitControls.enableDamping : true,
+      dampingFactor: model.orbitControls.dampingFactor || 0.1,
+      enableRotate: model.orbitControls.enableRotate !== undefined ? model.orbitControls.enableRotate : true,
+      enableZoom: model.orbitControls.enableZoom !== undefined ? model.orbitControls.enableZoom : true,
+      zoomSpeed: model.orbitControls.zoomSpeed || 1
+    };
+
+    // Update the global config
+    window.CAMERA_CONFIG.orbitControls = orbitConfig;
+    if (model.orbitControls.initialPosition) {
+      window.CAMERA_CONFIG.initialPosition = model.orbitControls.initialPosition;
+    }
+
+    // Reset camera with new config
+    window.cameraUtils.resetCamera();
+
+    // Set azimuthal and polar angles if present
+    const camera = document.querySelector('[camera]');
+    const orbit = camera.components['orbit-controls'];
+    const ocfg = model.orbitControls;
+    if (orbit && orbit.controls && ocfg) {
+      // Clamp a value between min and max
+      function clamp(val, min, max) {
+        return Math.max(min, Math.min(max, val));
+      }
+      const minPolar = ocfg.minPolarAngle !== undefined ? ocfg.minPolarAngle : 0;
+      const maxPolar = ocfg.maxPolarAngle !== undefined ? ocfg.maxPolarAngle : 180;
+      const minAzimuth = ocfg.minAzimuthAngle !== undefined ? ocfg.minAzimuthAngle : -180;
+      const maxAzimuth = ocfg.maxAzimuthAngle !== undefined ? ocfg.maxAzimuthAngle : 180;
+
+      let polar = ocfg.polarAngle !== undefined ? ocfg.polarAngle : 45;
+      let azimuthal = ocfg.azimuthalAngle !== undefined ? ocfg.azimuthalAngle : 0;
+
+      // Clamp to allowed range
+      const clampedPolar = clamp(polar, minPolar, maxPolar);
+      const clampedAzimuthal = clamp(azimuthal, minAzimuth, maxAzimuth);
+
+      if (polar !== clampedPolar) {
+        console.warn(`Requested polarAngle ${polar} out of range [${minPolar}, ${maxPolar}]. Clamped to ${clampedPolar}.`);
+      }
+      if (azimuthal !== clampedAzimuthal) {
+        console.warn(`Requested azimuthalAngle ${azimuthal} out of range [${minAzimuth}, ${maxAzimuth}]. Clamped to ${clampedAzimuthal}.`);
+      }
+
+      const patch = camera.components['orbit-controls-patch'];
+      if (patch) {
+        patch.el.setAttribute('orbit-controls-patch', 'initialAzimuthalAngle', clampedAzimuthal);
+        patch.el.setAttribute('orbit-controls-patch', 'initialPolarAngle', clampedPolar);
+        patch.patchOrbitControls();
+      }
+      // Ensure orbit controls are properly initialized
+      orbit.controls.update();
+      camera.setAttribute('orbit-controls', 'enableRotate', true);
+      // Force a camera position update
+      const threeCamera = camera.getObject3D('camera');
+      if (threeCamera) {
+        const pos = threeCamera.position;
+        camera.setAttribute('position', `${pos.x} ${pos.y} ${pos.z}`);
+      }
+      // Force update of orbit controls with initial angles
+      if (orbit.controls.setAzimuthalAngle && orbit.controls.setPolarAngle) {
+        const azimuthalAngle = THREE.MathUtils.degToRad(clampedAzimuthal);
+        const polarAngle = THREE.MathUtils.degToRad(clampedPolar);
+        orbit.controls.setAzimuthalAngle(azimuthalAngle);
+        orbit.controls.setPolarAngle(polarAngle);
+        orbit.controls.update();
+      }
+      // Debug log
+      console.log('Set azimuthal:', clampedAzimuthal, 'Set polar:', clampedPolar);
+      console.log('Actual azimuthal (deg):', THREE.MathUtils.radToDeg(orbit.controls.getAzimuthalAngle()));
+      console.log('Actual polar (deg):', THREE.MathUtils.radToDeg(orbit.controls.getPolarAngle()));
+    }
+  }
+  // Add hotspots
+  if (model.hotspots) {
+    model.hotspots.forEach(hotspot => {
+      const hs = document.createElement('a-sphere');
+      hs.setAttribute('radius', '0.025');
+      hs.setAttribute('color', '#4CC3D9');
+      hs.setAttribute('cursor-listener', '');
+      hs.setAttribute('class', 'clickable');
+      let hsAttr = `spatial-hotspot="isInteractable: true;`;
+      if (hotspot.position) hsAttr += ` position: ${hotspot.position.x} ${hotspot.position.y} ${hotspot.position.z};`;
+      if (hotspot.lookAt) hsAttr += ` lookAt: ${hotspot.lookAt.x} ${hotspot.lookAt.y} ${hotspot.lookAt.z};`;
+      if (hotspot.orbitAzimuth !== undefined) hsAttr += ` orbitAzimuth: ${hotspot.orbitAzimuth};`;
+      if (hotspot.orbitElevation !== undefined) hsAttr += ` orbitElevation: ${hotspot.orbitElevation};`;
+      if (hotspot.orbitDistance !== undefined) hsAttr += ` orbitDistance: ${hotspot.orbitDistance};`;
+      if (hotspot.label) hsAttr += ` label: '${hotspot.label}';`;
+      if (hotspot.title) hsAttr += ` title: '${hotspot.title}';`;
+      if (hotspot.duration) hsAttr += ` duration: ${hotspot.duration};`;
+      hsAttr += '"';
+      hs.setAttribute('spatial-hotspot', hsAttr);
+      scene.appendChild(hs);
+      currentHotspots.push(hs);
+    });
+  }
+}
+
+document.addEventListener('DOMContentLoaded', loadModelConfig);
+</script>
+</script>

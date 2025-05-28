@@ -1,0 +1,84 @@
+{
+  "models": [
+    {
+      "id": "colgatebox",
+      "filename": "colgateboxcomplete.glb",
+      "orbitControls": {
+        "target": { "x": 0, "y": 0, "z": 0 },
+        "minPolarAngle": -180,
+        "maxPolarAngle": 180,
+        "minAzimuthAngle": -180,
+        "maxAzimuthAngle": 180,
+        "minDistance": 0.25,
+        "maxDistance": 0.45,
+        "initialPosition": { "x": 0, "y": 2, "z": 0.2 },
+        "zoomSpeed": 4,
+        "azimuthalAngle": 0,
+        "polarAngle": 180
+      },
+      "modelPosition": { "x": 0, "y": 0, "z": 0 },
+      "modelRotation": { "x": 0, "y": 0, "z": 0 },
+      "hotspots": []
+    },
+    {
+      "id": "tubebox",
+      "filename": "tubebox.glb",
+      "orbitControls": {
+        "target": { "x": 0, "y": 0, "z": 0 },
+        "minPolarAngle": -180,
+        "maxPolarAngle": 180,
+        "minAzimuthAngle": -180,
+        "maxAzimuthAngle": 180,
+        "minDistance": 0.025,
+        "maxDistance": 0.095,
+        "initialPosition": { "x": 0, "y": 0.05, "z": 0 },
+        "zoomSpeed": 4,
+        "azimuthalAngle": 0,
+        "polarAngle": 90
+      },
+      "modelPosition": { "x": 0, "y": 0, "z": 0 },
+      "modelRotation": { "x": 90, "y": 0, "z": 0 },
+      "hotspots": []
+    },
+    {
+      "id": "tube",
+      "filename": "tube.glb",
+      "orbitControls": {
+        "target": { "x": 0, "y": 0, "z": 0 },
+        "minPolarAngle": -180,
+        "maxPolarAngle": 180,
+        "minAzimuthAngle": -180,
+        "maxAzimuthAngle": 180,
+        "minDistance": 0.025,
+        "maxDistance": 0.075,
+        "initialPosition": { "x": 0, "y": 0, "z": 0.0 },
+        "zoomSpeed": 4,
+        "azimuthalAngle": 0,
+        "polarAngle": 90
+      },
+      "modelPosition": { "x": 0, "y": 0, "z": 0 },
+      "modelRotation": { "x": 90, "y": 0, "z": 0 },
+      "hotspots": []
+    },    
+    {
+      "id": "singledose",
+      "filename": "singledose.glb",
+      "orbitControls": {
+        "target": { "x": 0, "y": 0, "z": 0 },
+        "minPolarAngle": -180,
+        "maxPolarAngle": 180,
+        "minAzimuthAngle": -180,
+        "maxAzimuthAngle": 180,
+        "minDistance": 0.025,
+        "maxDistance": 0.085,
+        "initialPosition": { "x": 0, "y": 0.05, "z": 0.065 },
+        "zoomSpeed": 4,
+        "azimuthalAngle": 0,
+        "polarAngle": 90
+      },
+      "modelPosition": { "x": 0, "y": 0, "z": 0 },
+      "modelRotation": { "x": 45, "y": 0, "z": 0 },
+      "hotspots": []
+    }
+  ]
+} 
