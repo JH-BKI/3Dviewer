@@ -73,7 +73,6 @@ AFRAME.registerComponent('zoom-ui', {
         if (this.zoomTimeout) {
             clearTimeout(this.zoomTimeout);
         }
-
         // Set new timeout to hide the panel
         this.zoomTimeout = setTimeout(() => {
             if (this.zoomContainer) {
@@ -83,7 +82,7 @@ AFRAME.registerComponent('zoom-ui', {
             this.isZooming = false;
         }, this.data.fadeTimeout);
     },
-
+    
     tick: function() {
         // Real-time zoom update
         const camera = document.querySelector('#camera');
@@ -95,25 +94,31 @@ AFRAME.registerComponent('zoom-ui', {
         const threeControls = controls.controls;
         const currentDistance = threeControls.object.position.distanceTo(threeControls.target);
         
-        // Prefer global config for min/max distance
-        let minDistance = 0.01;
-        let maxDistance = 0.085;
-        if (window.currentModelConfig && window.currentModelConfig.orbitControls) {
-            minDistance = window.currentModelConfig.orbitControls.minDistance ?? minDistance;
-            maxDistance = window.currentModelConfig.orbitControls.maxDistance ?? maxDistance;
+        let minDistance, maxDistance;
+        if (
+          window.currentModelConfig &&
+          window.currentModelConfig.orbitControls &&
+          typeof window.currentModelConfig.orbitControls.minDistance === 'number' &&
+          typeof window.currentModelConfig.orbitControls.maxDistance === 'number'
+        ) {
+          minDistance = window.currentModelConfig.orbitControls.minDistance;
+          maxDistance = window.currentModelConfig.orbitControls.maxDistance;
         } else {
-            // Fallback to orbit-controls attribute if present
-            const orbitAttr = camera.getAttribute('orbit-controls');
-            if (orbitAttr.minDistance) minDistance = orbitAttr.minDistance;
-            if (orbitAttr.maxDistance) maxDistance = orbitAttr.maxDistance;
+          // Fallback to orbit-controls attribute or hardcoded values
+          const orbitAttr = camera ? camera.getAttribute('orbit-controls') : {};
+          minDistance = orbitAttr.minDistance || 0.01;
+          maxDistance = orbitAttr.maxDistance || 0.5;
         }
         
         let zoomPercent = ((maxDistance - currentDistance) / (maxDistance - minDistance)) * 100;
         zoomPercent = Math.max(0, Math.min(100, Math.round(zoomPercent)));
-
+        
+        //console.log(zoomPercent, minDistance, maxDistance, currentDistance);
+        
         // Always update zoom value
         if (this.zoomDisplay) {
             this.zoomDisplay.textContent = zoomPercent + '%';
+            
         }
     },
 

@@ -450,9 +450,10 @@ function setMaxZoomDistance(maxDistance) {
       console.error("Orbit controls not ready.");
       return;
     }
-
+    cameraEl.setAttribute('orbit-controls', 'maxDistance', maxDistance);
     controls.maxDistance = maxDistance;
     controls.update();
+    
   }
 
 function setPolarAndAzimuthalAngle(polar, azimuthal){
@@ -499,81 +500,6 @@ function setPolarAndAzimuthalAngle(polar, azimuthal){
   controls.update();
 }
 
-
-
-
-
-function setAzimuthalAngle(azimuthal) {
-  const cameraEl = document.querySelector('#camera');
-  if (!cameraEl) {
-    console.error('Camera entity not found.');
-    return;
-  }
-
-  const orbitControlsComponent = cameraEl.components['orbit-controls'];
-  if (!orbitControlsComponent) {
-    console.error('Orbit controls not initialized.');
-    return;
-  }
-
-  const controls = orbitControlsComponent.controls;
-  if (!controls || !controls.target) {
-    console.error("Orbit controls not ready.");
-    return;
-  }
-
-  // Create spherical if missing
-  if (!controls.spherical) {
-    controls.spherical = new THREE.Spherical().setFromVector3(
-      controls.object.position.clone().sub(controls.target)
-    );
-  }
-
-  // Set the azimuthal angle (theta) in radians — 0 means "facing down -Z"
-  controls.spherical.theta = azimuthal;
-
-  // Refresh camera position from spherical coordinates
-  const offset = new THREE.Vector3().setFromSpherical(controls.spherical);
-  controls.object.position.copy(controls.target).add(offset);
-  controls.object.lookAt(controls.target);
-
-  // Reset internal deltas and update
-  if (controls.sphericalDelta) controls.sphericalDelta.set(0, 0, 0);
-  controls.enableRotate = true;
-  controls.update();
-}
-
-function setPolarAngle(polar) {
-    const cameraEl = document.querySelector('#camera');
-    const orbitControlsComponent = cameraEl.components['orbit-controls'];
-    const controls = orbitControlsComponent.controls;
-
-    // Ensure controls and their target spherical object are available
-    if (!controls || !controls.target) {
-      console.error("Orbit controls not ready.");
-      return;
-    }
-
-    // TEMP: Create spherical if missing (some A-Frame builds don't expose it directly)
-    if (!controls.spherical) {
-      controls.spherical = new THREE.Spherical().setFromVector3(
-        controls.object.position.clone().sub(controls.target)
-      );
-    }
-
-    // Set the polar angle (in radians)
-    controls.spherical.phi = THREE.MathUtils.degToRad(polar);
-
-    // Refresh camera rotation based on new spherical coords
-    const offset = new THREE.Vector3().setFromSpherical(controls.spherical);
-    controls.object.position.copy(controls.target).add(offset);
-    controls.object.lookAt(controls.target);
-    
-    // Reset internal deltas and state
-    if (controls.sphericalDelta) controls.sphericalDelta.set(0, 0, 0);
-    controls.enableRotate = true;
-    controls.update();
-}
 
 function setZoomLevel(zoomDistance = 0.1) {
   const cameraEl = document.querySelector('#camera');

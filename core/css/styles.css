@@ -245,65 +245,62 @@ a-scene {
 }
 #loading-outer>div {
 		display: inline-block;
-		-webkit-text-stroke: 1px #fff;
-		text-stroke: 1px #fff;
-	}
-	#loading-inner {
-		position: relative;
-		height: 64px;
-		width: 64px;
-		top: -2px;
-		display: inline-block;
-		perspective: 1000px;
-		transform-style: preserve-3d;
-		animation-name: cuberota;
-		animation-duration: 20s;
-		animation-iteration-count: infinite;
-		animation-timing-function: linear;
+}
+#loading-inner {
+    position: relative;
+    height: 64px;
+    width: 64px;
+    top: -2px;
+    display: inline-block;
+    perspective: 1000px;
+    transform-style: preserve-3d;
+    animation-name: cuberota;
+    animation-duration: 20s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+#loading-inner>div {
+    position: absolute;
+    display: block;
+    top: 0;
+    left: 0;
+    height: 64px;
+    width: 64px;
+    border: 1px solid #333;
+    backface-visibility: visible;
+}
+
+#back {
+    transform: rotateY(180deg) translateZ(-64px);
+    background: rgba(0, 147, 144,0.75);
+}
+#top {
+    transform: rotateX(90deg) translate3d(0,32px,32px);
+    background: rgba(146, 39, 143,0.75);
+}
+#bottom {
+    transform: rotateX(-90deg) translate3d(0,-32px,32px);
+    background: rgba(0, 121, 194,0.75);
+}
+#left {
+    transform: rotateY(-90deg) translate3d(32px, 0, 32px);
+    background: rgba(236, 0, 140,0.75);
+}
+#right {
+    transform: rotateY(90deg) translate3d(-32px, 0, 32px);
+    background: rgba(253, 184, 19,0.75);
+}
+
+@keyframes cuberota {
+    0% {
+        transform-style: preserve-3d;
+        transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg) translateZ(-32px);
     }
-	#loading-inner>div {
-        position: absolute;
-        display: block;
-        top: 0;
-        left: 0;
-        height: 64px;
-        width: 64px;
-        border: 1px solid #333;
-        backface-visibility: visible;
-
-		}
-
-		#back {
-			transform: rotateY(180deg) translateZ(-64px);
-            background: rgba(0, 147, 144,0.75);
-		}
-		#top {
-			transform: rotateX(90deg) translate3d(0,32px,32px);
-            background: rgba(146, 39, 143,0.75);
-		}
-		#bottom {
-			transform: rotateX(-90deg) translate3d(0,-32px,32px);
-            background: rgba(0, 121, 194,0.75);
-		}
-		#left {
-			transform: rotateY(-90deg) translate3d(32px, 0, 32px);
-            background: rgba(236, 0, 140,0.75);
-		}
-		#right {
-			transform: rotateY(90deg) translate3d(-32px, 0, 32px);
-            background: rgba(253, 184, 19,0.75);
-		}
-	
-	@keyframes cuberota {
-		0% {
-			transform-style: preserve-3d;
-			transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg) translateZ(-32px);
-		}
-		100% {
-			transform-style: preserve-3d;
-			transform: rotateX(720deg) rotateY(1440deg) rotateZ(360deg) translateZ(-32px);
-		}
-	}
+    100% {
+        transform-style: preserve-3d;
+        transform: rotateX(720deg) rotateY(1440deg) rotateZ(360deg) translateZ(-32px);
+    }
+}
 
 
 [aria-label][data-balloon-pos] {
