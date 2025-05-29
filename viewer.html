@@ -9,16 +9,19 @@
     <script src="./core/js/components/spatial-hotspot.js"></script>
     <script src="./core/js/components/camera-utils.js"></script>
     <script src="./core/js/mixins/rotation-visualizer.js"></script>
-    <script src="./core/js/components/orbit-controls-patch.js"></script>
+    <!-- <script src="./core/js/components/orbit-controls-patch.js"></script> -->
     <script src="./core/js/components/onboarding-guide.js"></script>
     <script src="./core/js/components/ui-overlay.js"></script>
-    <script src="./core/js/components/orbit-path-visualizer.js"></script>
-
+    <script src="./core/js/components/zoom-ui.js"></script>
+    <!-- <script src="./core/js/components/orbit-path-visualizer.js"></script> -->
+    <!-- <<script src="./core/js/components/view-cube.js"></script> -->
+        <!-- Only the modular HUD view cube script should remain for the view cube -->
+        <!-- <script src="./core/js/components/view-cube-hud.js"></script> -->
     <link rel="stylesheet" href="./core/css/pkg/bulma.min.css"> <!-- https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css -->
     <link rel="stylesheet" href="./core/css/pkg/bulma-tooltip.min.css"> <!-- https://cdn.jsdelivr.net/npm/bulma-tooltip@2.0.2/dist/css/bulma-tooltip.min.css -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"> <!-- https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css -->
     <link rel="stylesheet" href="./core/css/styles.css">
-</head>
+  </head>
 <body>
     <script>
         function DeviceActivate() {           
@@ -44,7 +47,7 @@
                     // Add camera-utils to the scene
                     scene.setAttribute('camera-utils', '');
                     // Reset camera using the new component
-                    ResetCameraAllValues(45, 0);
+                    ResetCameraAllValues(90, 0);
                 });
             }
         });
@@ -97,7 +100,7 @@
 
         <div class="buttons-container">
           <button class="button is-medium is-link tooltip is-tooltip-right overlay-buttons" data-tooltip="Model selector" id="general-info-toggle" aria-label="Toggle Model selector">
-          <i class="fa-solid fa-question fa-beat" aria-hidden="true" style="--fa-animation-duration: 2s; --fa-beat-scale: 1.2;"></i>
+          <i class="fa-solid fa-cube fa-beat" aria-hidden="true" style="--fa-animation-duration: 2s; --fa-beat-scale: 1.2;"></i>
           </button>      
 
           <button class="button is-medium is-link tooltip is-tooltip-left overlay-buttons" data-tooltip="Go fullscreen" id="fullscreen-toggle" aria-label="Fullscreen view">
@@ -120,7 +123,7 @@
             <div class="modal-background"></div>
             <div class="modal-card">
               <header class="modal-card-head">
-                <p class="modal-card-title">How to use this 3D viewer</p>
+                <p class="modal-card-title"><i class="fa-solid fa-cube"></i>&nbsp;How to use this 3D viewer</p>
               </header>
               <section class="modal-card-body">
                   <div class="block">
@@ -169,56 +172,47 @@
             <div class="modal-background"></div>
             <div class="modal-card">
               <header class="modal-card-head">
-                <p class="modal-card-title">Choose a 3D model</p>
+                <p class="modal-card-title"><i class="fa-solid fa-cube"></i>&nbsp;Choose a 3D model</p>
               </header>
               <section class="modal-card-body">
                   <div class="block">
                     <p>Select an item below to explore it in the 3D viewer:</p>
                 </div>
-                  <div class="fixed-grid">
-                  <div class="grid">
-                      <div class="cell">
-                        <button class="button model-selector-button" data-model="colgatebox">
-                          <div class="block">
-                              <h5 class="is-size-5">Colgate Box</h5>
-                              <figure class="image is-16by9">
-                                <img src="/assets/images/colgate-box.png" alt="colgate box 3D model">
-                            </figure>
+                  <div class="model-selector-panel">
+                      <div class="column">
+                        <button class="button model-selector-button is-link is-light" data-model="colgatebox">
+                            <div style="background-image: url('./assets/images/colgate-box.jpg');"></div>
+                            <div>
+                              <h4 class="is-size-4">Colgate Box</h4>
+                            </div>
+                          </button>
+                        </div>
+                      <div class="column">
+                        <button class="button model-selector-button is-link is-light" data-model="tubebox">
+                          <div style="background-image: url('./assets/images/duraphat-box.jpg');"></div>
+                          <div>
+                            <h4 class="is-size-4">Duraphat Box</h4>
                           </div>
                         </button>
-                      </div>
-                      <div class="cell">
-                        <button class="button model-selector-button" data-model="tubebox">
-                          <div class="block">
-                            <h5 class="is-size-5">Duraphat Box</h5>
-                            <figure class="image is-16by9">
-                              <img src="/assets/images/duraphat-box.png" alt="Duraphat box 3D model">
-                          </figure>
                         </div>
-                        </button>
-                      </div>
-                      <div class="cell">
-                        <button class="button model-selector-button" data-model="tube">
-                          <div class="block">
-                              <h5 class="is-size-5">Duraphat Tube</h5>
-                              <figure class="image is-16by9">
-                            <img src="/assets/images/duraphat-tube.png" alt="Duraphat tube 3D model">
-                          </figure>
-                        </div>
+                      <div class="column">
+                        <button class="button model-selector-button is-link is-light" data-model="tube">
+                          <div style="background-image: url('./assets/images/duraphat-tube.jpg');"></div>
+                          <div>
+                            <h4 class="is-size-4">Duraphat Tube</h4>
+                          </div>
                       </button>
                       </div>
-                      <div class="cell">
-                      <button class="button model-selector-button" data-model="singledose">  
-                        <div class="block">
-                          <h5 class="is-size-5">Single Dose</h5>
-                          <figure class="image is-16by9">
-                            <img src="/assets/images/single-dose.png" alt="Single dose 3D model">
-                        </figure>
-                      </div>
-                    </button>
-                    </div>                       
+                      <div class="column">
+                        <button class="button model-selector-button is-link is-light" data-model="singledose">  
+                          <div style="background-image: url('./assets/images/single-dose.jpg');"></div>
+                          <div>
+                            <h4 class="is-size-4">Duraphat Single Dose</h4>
+                          </div>
+                        </button>
+                      </div>                       
                   </div>
-                </div>
+                
               </section>
               <footer class="modal-card-foot">
                 <div class="buttons">
@@ -238,18 +232,17 @@
       cursor="rayOrigin: mouse; fuse: false"
       raycaster="objects: [cursor-listener]"
       camera-utils
+      zoom-ui
       >
 
       <a-entity ui-overlay></a-entity>
-        <a-assets>
+      <!-- View cube HUD will be rendered in a fixed HTML container -->
+      <a-assets>
             <a-asset-item id="modelSubject" src="./assets/3d/colgateboxcomplete.glb"></a-asset-item>
-            <img id="sceneBg" src="./assets/images/scene-background.jpg" alt="Scene background">
+            <img id="sceneBg" src="./assets/images/scene-background.jpg" alt="Scene background" crossorigin="anonymous">
         </a-assets>
 
-
-        
-        
-        
+        <!-- Move sky before other elements to ensure it loads first -->
         <a-sky src="#sceneBg" rotation="0 0 0"></a-sky>
 
         <!-- Example SpatialHotspot -->
@@ -310,9 +303,9 @@
             ">
         </a-entity> -->
 
-        <!-- Add VR hands -->
+        <!-- Add VR hands
         <a-entity id="leftHand" oculus-touch-controls="hand: left"></a-entity>
-        <a-entity id="rightHand" oculus-touch-controls="hand: right"></a-entity>
+        <a-entity id="rightHand" oculus-touch-controls="hand: right"></a-entity> -->
 
           <a-light type="ambient" color="#ffffff" intensity="0.65"></a-light>
           <a-light type="directional" color="#fff" intensity="1" position="3.3 4 1.5"></a-light>
@@ -324,7 +317,10 @@
           
           <a-entity id="camera" camera look-controls="enabled: false" 
           orbit-controls="target: 0 0 0; 
-          minPolarAngle: -180;  
+          
+          autoRotate: true;
+          autoRotateSpeed: 0.1;
+          minPolarAngle: -10;  
           maxPolarAngle: 180;
           minDistance: 0.01; 
           maxDistance: 0.085; 
@@ -337,14 +333,7 @@
           enableZoom: true;"
               onboarding-guide="
                   message: 'Click/touch and swipe to explore';
-                  imageUrl: ''./assets/images/onboarding-rotate.gif';
-                  amplitude: 5;
-                  speed: 0.25;
-                  loops: 1.5;
-                  initialDelay: 250;
-                  cooldown: 10000;
-                  idleOrbit: true;
-                  idleOrbitSpeed: 5;">
+                  imageUrl: ''./assets/images/onboarding-rotate.gif';">
           </a-entity>
           
           <!-- <a-entity id="camera" camera
@@ -368,6 +357,9 @@
 let modelConfig = null;
 let currentModelEntity = null;
 let currentHotspots = [];
+let currentModelConfig = null; // <-- Store the current model config globally
+
+
 
 // --- Unlimited azimuthal orbit fix ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -414,15 +406,101 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // Add reset button handler (ensure the button has id="reset-camera")
+  const resetBtn = document.getElementById('reset-camera');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      if (currentModelConfig && currentModelConfig.orbitControls) {
+        ResetCameraAllValues(
+          currentModelConfig.orbitControls.InitialPolarAngle,
+          currentModelConfig.orbitControls.InitialAzimuthAngle,
+          currentModelConfig.orbitControls.InitialZoomAmmount,
+          currentModelConfig.orbitControls.ZoomMaxDistance
+        );
+      }
+    });
+  }
 });
 
 
-function ResetCameraAllValues(polar, azimuthal){
-  setAzimuthalAngle(azimuthal);
-  setPolarAngle(polar);
-  setZoomLevel(0.085)
+function ResetCameraAllValues(polar, azimuthal, zoomlevel, maxZoomDistance){
+  setPolarAndAzimuthalAngle(polar, azimuthal);
+  setMaxZoomDistance(maxZoomDistance);
+  setZoomLevel(zoomlevel);
   updateOrbitTarget("0 0 0");
 }
+
+function setMaxZoomDistance(maxDistance) {
+    const cameraEl = document.querySelector('#camera');
+    if (!cameraEl) {
+      console.error('Camera entity not found.');
+      return;
+    }
+
+    const orbitControlsComponent = cameraEl.components['orbit-controls'];
+    if (!orbitControlsComponent) {
+      console.error('Orbit controls not initialized.');
+      return;
+    }
+
+    const controls = orbitControlsComponent.controls;
+    if (!controls) {
+      console.error("Orbit controls not ready.");
+      return;
+    }
+
+    controls.maxDistance = maxDistance;
+    controls.update();
+  }
+
+function setPolarAndAzimuthalAngle(polar, azimuthal){
+  const cameraEl = document.querySelector('#camera');
+  if (!cameraEl) {
+    console.error('Camera entity not found.');
+    return;
+  }
+
+  const orbitControlsComponent = cameraEl.components['orbit-controls'];
+  if (!orbitControlsComponent) {
+    console.error('Orbit controls not initialized.');
+    return;
+  }
+
+  const controls = orbitControlsComponent.controls;
+  if (!controls || !controls.target) {
+    console.error("Orbit controls not ready.");
+    return;
+  }
+
+  // Create spherical if missing
+  if (!controls.spherical) {
+    controls.spherical = new THREE.Spherical().setFromVector3(
+      controls.object.position.clone().sub(controls.target)
+    );
+  }
+
+  // Set the azimuthal angle (theta) in radians — 0 means "facing down -Z"
+  controls.spherical.theta = azimuthal;
+  
+  // Set the polar angle (in radians)
+  controls.spherical.phi = THREE.MathUtils.degToRad(polar);
+
+
+  // Refresh camera position from spherical coordinates
+  const offset = new THREE.Vector3().setFromSpherical(controls.spherical);
+  controls.object.position.copy(controls.target).add(offset);
+  controls.object.lookAt(controls.target);
+
+  // Reset internal deltas and update
+  if (controls.sphericalDelta) controls.sphericalDelta.set(0, 0, 0);
+  controls.enableRotate = true;
+  controls.update();
+}
+
+
+
+
 
 function setAzimuthalAngle(azimuthal) {
   const cameraEl = document.querySelector('#camera');
@@ -496,7 +574,7 @@ function setPolarAngle(polar) {
     controls.update();
 }
 
-function setZoomLevel(zoomDistance = 5) {
+function setZoomLevel(zoomDistance = 0.1) {
   const cameraEl = document.querySelector('#camera');
   const orbitControlsComponent = cameraEl.components['orbit-controls'];
 
@@ -595,6 +673,7 @@ async function loadModelConfig() {
 async function loadModelByIndex(idx) {
   const model = modelConfig.models[idx];
   if (!model) return;
+  currentModelConfig = model; // <-- Store for reset button
   // Remove previous model entity
   if (currentModelEntity) {
     currentModelEntity.parentNode.removeChild(currentModelEntity);
@@ -618,7 +697,12 @@ async function loadModelByIndex(idx) {
   // Wait for model to load before updating camera/controls
   entity.addEventListener('model-loaded', () => {
     // Reset camera using the new method
-    ResetCameraAllValues(45, 0);
+    ResetCameraAllValues(model.orbitControls.InitialPolarAngle, 
+                         model.orbitControls.InitialAzimuthAngle,
+                         model.orbitControls.InitialZoomAmmount,
+                         model.orbitControls.ZoomMaxDistance);
+
+    console.log(model.orbitControls);
 
     // Add hotspots
     if (model.hotspots) {
@@ -648,4 +732,4 @@ async function loadModelByIndex(idx) {
 
 document.addEventListener('DOMContentLoaded', loadModelConfig);
 </script>
-</script>
+

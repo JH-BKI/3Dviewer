@@ -76,21 +76,31 @@ a-scene {
 
 
 #zoomDisplay {
-    text-align: center;
-    width: 100px;
     position: fixed;
     top: 50%;
     left: 50%;
-    margin: 1rem;
-    font-size: 2rem;
-    padding: 1rem 0.5rem;
-    background: rgba(255, 255, 255, 0.35);
-    margin-top: -50px;
-    margin-left: -50px;
-    pointer-events: none;
+    background: rgba(41, 66, 255, 0.65);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 1rem;
     opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: 2;
+    transition: opacity 0.3s ease-in-out;
+    z-index: 9999;
+    pointer-events: none;
+    text-align: center;
+    font-size: 2rem;
+    width: 100px;
+    margin-left: -50px;
+    margin-top: -40px;
+}
+
+#zoomDisplay.is-visible {
+    opacity: 1;
+}
+
+#zoomValue {
+    font-weight: bold;
+    font-size: 1.2rem;
 }
 
 .buttons-container, .instructions-container, .model-selector-container {
@@ -106,7 +116,93 @@ a-scene {
 {
     width: 100%;
     height: 14rem;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-content: stretch;
+    align-items: flex-start;
+    padding:0;
+    border:1px solid #bbb;
+    position: relative;
+    }
+
+
+/* Hide pseudo-elements by default */
+.model-selector-button::before,
+.model-selector-button::after {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
 }
+
+/* Show and position on hover */
+.model-selector-button:hover::before {
+    content: 'Load this model';
+    top: 26%;
+    font-size: 1rem;
+    color: white;
+    opacity: 1;
+    background: rgba(41, 66, 255, 0.65);
+    padding: 1rem;
+    border-radius: 1rem;
+    height: 6rem;
+    transform: translateX(-50%);
+    line-height: 6.5rem;
+}
+
+.model-selector-button:hover::after {
+    font-family: 'Font Awesome 6 Free', sans-serif;
+    font-weight: 900;
+    content: '\f1b2';
+    top: 29%;
+    font-size: 2.2rem;
+    opacity: 1;
+    color: white;
+    animation: bounce-once 0.6s ease-out 1;
+}
+@keyframes bounce-once {
+    0%   { transform: translate(-50%, 0); }
+    30%  { transform: translate(-50%, -10px); }
+    60%  { transform: translate(-50%, 5px); }
+    100% { transform: translate(-50%, 0); }
+  }
+
+.model-selector-button > div:nth-child(1) {
+    order: 0;
+    flex: 1 0 auto;
+    align-self: stretch;
+    height: 80%;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    border-radius: 4px;
+    }
+
+.model-selector-button > div:nth-child(2) {
+    order: 1;
+    flex: 1 0 auto;
+    align-self: stretch;
+    height: 20%;
+    }
+
+.model-selector-panel{
+    display: flex;
+    flex-wrap: wrap;
+}
+.model-selector-panel .column {
+    flex: 1 1 50%;
+    box-sizing: border-box;
+    padding: 1rem;
+  }
+@media (max-width: 600px) {
+    .model-selector-panel .column {
+      flex: 1 1 100%;
+    }
+  }
 
 
 .loading-container {

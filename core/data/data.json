@@ -5,6 +5,12 @@
       "filename": "colgateboxcomplete.glb",
       "modelPosition": { "x": 0, "y": 0, "z": 0 },
       "modelRotation": { "x": 0, "y": 0, "z": 0 },
+      "orbitControls": {
+        "InitialPolarAngle": 45,
+        "InitialAzimuthAngle": 0,
+        "ZoomMaxDistance": 0.5,
+        "InitialZoomAmmount": 0.5
+      },
       "hotspots": []
     },
     {
@@ -12,6 +18,12 @@
       "filename": "tubebox.glb",
       "modelPosition": { "x": 0, "y": 0, "z": 0 },
       "modelRotation": { "x": 90, "y": 0, "z": 0 },
+      "orbitControls": {
+        "InitialPolarAngle": 90,
+        "InitialAzimuthAngle": 0,
+        "ZoomMaxDistance": 0.085,
+        "InitialZoomAmmount": 0.085
+      },
       "hotspots": []
     },
     {
@@ -19,6 +31,12 @@
       "filename": "tube.glb",
       "modelPosition": { "x": 0, "y": 0, "z": 0 },
       "modelRotation": { "x": 90, "y": 0, "z": 0 },
+      "orbitControls": {
+        "InitialPolarAngle": 90,
+        "InitialAzimuthAngle": 0,
+        "ZoomMaxDistance": 0.085,
+        "InitialZoomAmmount": 0.085
+      },
       "hotspots": []
     },    
     {
@@ -26,6 +44,12 @@
       "filename": "singledose.glb",
       "modelPosition": { "x": 0, "y": 0, "z": 0 },
       "modelRotation": { "x": 45, "y": 0, "z": 0 },
+      "orbitControls": {
+        "InitialPolarAngle": 90,
+        "InitialAzimuthAngle": 0,
+        "ZoomMaxDistance": 0.085,
+        "InitialZoomAmmount": 0.085
+      },
       "hotspots": []
     }
   ]
