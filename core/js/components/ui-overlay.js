@@ -1,4 +1,4 @@
-console.log('ui-overlay.js loaded');
+// //console.log('ui-overlay.js loaded');
 // Global flag to track if user has selected a model
 window.hasSelectedModel = false;
 
@@ -8,7 +8,7 @@ AFRAME.registerComponent('ui-overlay', {
     function showLoadingScreen(callback) {
       const loadingContainer = document.querySelector('.loading-container');
       if (loadingContainer) {
-        console.log('showLoadingScreen');
+        //console.log('showLoadingScreen');
         loadingContainer.style.display = 'block';
         setTimeout(() => {
           loadingContainer.classList.remove('fade-in');
@@ -28,21 +28,21 @@ AFRAME.registerComponent('ui-overlay', {
     function toggleSelector(element, showHide=true, callback=null) {
       const selectorContainer = document.querySelector(element);
       if (selectorContainer) {
-        console.log('toggleSelector is called for: ', element);
+        //console.log('toggleSelector is called for: ', element);
         if (showHide) {
-            console.log('toggleSelector is showing: ', element);
+            //console.log('toggleSelector is showing: ', element);
             selectorContainer.style.display = 'block';
             selectorContainer.classList.remove('fade-out');
             selectorContainer.classList.add('fade-in');
-            console.log('toggleSelector is done showing: ', element);
+            //console.log('toggleSelector is done showing: ', element);
             if (typeof callback === 'function') callback();     
         } else {
-          console.log('toggleSelector is hiding: ', element);
+          //console.log('toggleSelector is hiding: ', element);
           selectorContainer.classList.remove('fade-in');
           selectorContainer.classList.add('fade-out');
             setTimeout(() => {
               selectorContainer.style.display = 'none';
-              console.log('toggleSelector is done hiding: ', element);
+              //console.log('toggleSelector is done hiding: ', element);
               if (typeof callback === 'function') callback();
             }, 400);
         } 
@@ -76,10 +76,10 @@ AFRAME.registerComponent('ui-overlay', {
     }
 
 
-    console.log('ui-overlay.js in comp');
+    //console.log('ui-overlay.js in comp');
     // Fade in the overlay container (this.el)
     const uiContainer = this.el;
-    console.log('ui-overlay init');
+    //console.log('ui-overlay init');
     if (uiContainer) {
       showLoadingScreen(() => {
         toggleSelector('.instructions-container',true);

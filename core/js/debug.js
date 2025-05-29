@@ -9,7 +9,7 @@ function initDebug() {
             // Toggle stats
             const stats = scene.getAttribute('stats');
             scene.setAttribute('stats', !stats);
-            console.log('Stats:', !stats ? 'enabled' : 'disabled');
+            // console.log('Stats:', !stats ? 'enabled' : 'disabled');
         }
         
         // Add keyboard listener for 'p' key
@@ -22,7 +22,7 @@ function initDebug() {
                 // Format values to 2 decimal places
                 const formattedPosition = `${position.x.toFixed(2)} ${position.y.toFixed(2)} ${position.z.toFixed(2)}`;
                 const formattedRotation = `${rotation.x.toFixed(2)} ${rotation.y.toFixed(2)} ${rotation.z.toFixed(2)}`;
-                console.log(`Position: "${formattedPosition}" Rotation: "${formattedRotation}"`);
+                // console.log(`Position: "${formattedPosition}" Rotation: "${formattedRotation}"`);
                 // Log orbit-controls config for copy-paste
                 const orbit = camera.components['orbit-controls'];
                 if (orbit) {
@@ -53,21 +53,20 @@ function initDebug() {
                         enableZoom: orbit.data.enableZoom,
                         zoomSpeed: orbit.controls ? orbit.controls.zoomSpeed : undefined
                     };
-                    console.log('Current orbit-controls config:', JSON.stringify(config, null, 2));
+                    // console.log('Current orbit-controls config:', JSON.stringify(config, null, 2));
                     // Log current zoom factor (distance from camera to target)
                     if (orbit.controls) {
                         const camPos = orbit.controls.object.position;
                         const tgt = orbit.controls.target;
                         const zoomFactor = camPos.distanceTo(tgt);
-                        console.log('Current zoom factor (distance to target):', zoomFactor.toFixed(3));
-                        console.log('Current zoomSpeed:', orbit.controls.zoomSpeed);
+                        // console.log('Current zoom factor (distance to target):', zoomFactor.toFixed(3));
                         // Log azimuthal and polar angles
                         const azimuthRad = orbit.controls.getAzimuthalAngle();
                         const polarRad = orbit.controls.getPolarAngle();
                         const azimuthDeg = THREE.MathUtils.radToDeg(azimuthRad);
                         const polarDeg = THREE.MathUtils.radToDeg(polarRad);
-                        console.log('Current azimuthal angle (deg):', azimuthDeg.toFixed(2));
-                        console.log('Current polar angle (deg):', polarDeg.toFixed(2));
+                        // console.log('Current azimuthal angle (deg):', azimuthDeg.toFixed(2));
+                        // console.log('Current polar angle (deg):', polarDeg.toFixed(2));
                     }
                 }
             }

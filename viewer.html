@@ -18,7 +18,7 @@
         <!-- Only the modular HUD view cube script should remain for the view cube -->
         <!-- <script src="./core/js/components/view-cube-hud.js"></script> -->
     <link rel="stylesheet" href="./core/css/pkg/bulma.min.css"> <!-- https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css -->
-    <link rel="stylesheet" href="./core/css/pkg/bulma-tooltip.min.css"> <!-- https://cdn.jsdelivr.net/npm/bulma-tooltip@2.0.2/dist/css/bulma-tooltip.min.css -->
+    <link rel="stylesheet" href="./core/css/pkg/balloon.css"> <!-- https://cdn.jsdelivr.net/npm/bulma-tooltip@2.0.2/dist/css/bulma-tooltip.min.css -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"> <!-- https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css -->
     <link rel="stylesheet" href="./core/css/styles.css">
   </head>
@@ -99,16 +99,16 @@
         </div>
 
         <div class="buttons-container">
-          <button class="button is-medium is-link tooltip is-tooltip-right overlay-buttons" data-tooltip="Model selector" id="general-info-toggle" aria-label="Toggle Model selector">
+          <button class="button is-medium is-link overlay-buttons" data-balloon-pos="right" aria-label="Model selection" id="general-info-toggle">
           <i class="fa-solid fa-cube fa-beat" aria-hidden="true" style="--fa-animation-duration: 2s; --fa-beat-scale: 1.2;"></i>
           </button>      
 
-          <button class="button is-medium is-link tooltip is-tooltip-left overlay-buttons" data-tooltip="Go fullscreen" id="fullscreen-toggle" aria-label="Fullscreen view">
+          <button class="button is-medium is-link overlay-buttons" data-balloon-pos="left" aria-label="Go fullscreen" id="fullscreen-toggle">
           <i class="fa-solid fa-compress minimise-view" aria-hidden="true" style="display:none;"></i>
           <i class="fa-solid fa-expand maximise-view" aria-hidden="true" style="display:block;"></i>
           </button>
 
-          <button class="button is-medium is-link tooltip is-tooltip-right overlay-buttons" data-tooltip="Reset view" id="reset-camera" aria-label="Reset camera view" onclick="ResetCameraAllValues(45, 0)">
+          <button class="button is-medium is-link overlay-buttons" data-balloon-pos="right" aria-label="Reset view" id="reset-camera" onclick="ResetCameraAllValues(45, 0)">
             <i class="fa-solid fa-sync-alt" aria-hidden="true"></i>
           </button>      
 
@@ -131,7 +131,7 @@
                   </div>
                   <div class="column">                        
                       <figure class="image is-16by9">
-                          <img src="/assets/images/basic-controls.gif" alt="basic controls demonstration">
+                          <img src="./assets/images/basic-controls.gif" alt="basic controls demonstration">
                       </figure>
                   </div>
                   <div class="columns is-desktop">
@@ -154,9 +154,7 @@
                           </div>
                       </div>                        
                   </div>
-                  <div class="block">
-                    <p>Use the Reset View button to center your view of the 3D model.</p>
-                </div>
+             
               </section>
               <footer class="modal-card-foot">
                 <div class="buttons">
@@ -233,7 +231,7 @@
       raycaster="objects: [cursor-listener]"
       camera-utils
       zoom-ui
-      >
+      loading-screen="dotsColor: white; backgroundColor: black">
 
       <a-entity ui-overlay></a-entity>
       <!-- View cube HUD will be rendered in a fixed HTML container -->
@@ -332,7 +330,7 @@
           enableRotate: true;
           enableZoom: true;"
               onboarding-guide="
-                  message: 'Click/touch and swipe to explore';
+                  message: 'Click/touch and<BR>swipe to explore';
                   imageUrl: ''./assets/images/onboarding-rotate.gif';">
           </a-entity>
           
@@ -353,6 +351,9 @@
   </html>
 
 <script>
+
+let version = 'v0.99.20250529:1635';
+
 // Model dropdown and config logic
 let modelConfig = null;
 let currentModelEntity = null;
@@ -702,7 +703,7 @@ async function loadModelByIndex(idx) {
                          model.orbitControls.InitialZoomAmmount,
                          model.orbitControls.ZoomMaxDistance);
 
-    console.log(model.orbitControls);
+    //console.log(model.orbitControls);
 
     // Add hotspots
     if (model.hotspots) {

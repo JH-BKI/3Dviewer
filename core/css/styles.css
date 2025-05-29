@@ -75,11 +75,26 @@ a-scene {
 }
 
 
+.onboarding-guide{
+    position: fixed;
+    bottom: 0%;
+    left: 50%;
+    transform: translate(-50%, -12%);
+    color: white;
+    text-align: center;
+    z-index: 1;
+    display: none;
+    pointer-events: none;
+    background: rgba(41, 66, 255, 0.55);
+    padding: 1rem;
+    border-radius: 1rem;
+}
+
 #zoomDisplay {
     position: fixed;
-    top: 50%;
+    top: 38%;
     left: 50%;
-    background: rgba(41, 66, 255, 0.65);
+    background: rgba(41, 66, 255, 0.55);
     color: white;
     padding: 0.5rem 1rem;
     border-radius: 1rem;
@@ -100,7 +115,7 @@ a-scene {
 
 #zoomValue {
     font-weight: bold;
-    font-size: 1.2rem;
+    font-size: 1.5rem;
 }
 
 .buttons-container, .instructions-container, .model-selector-container {
@@ -289,3 +304,8 @@ a-scene {
 			transform: rotateX(720deg) rotateY(1440deg) rotateZ(360deg) translateZ(-32px);
 		}
 	}
+
+
+[aria-label][data-balloon-pos] {
+    position: fixed; 
+}

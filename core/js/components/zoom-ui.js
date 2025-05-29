@@ -6,7 +6,7 @@
 AFRAME.registerComponent('zoom-ui', {
     schema: {
         initialDistance: { type: 'number', default: 3.5 },
-        fadeTimeout: { type: 'number', default: 2000 }
+        fadeTimeout: { type: 'number', default: 1000 }
     },
 
     init: function() {
@@ -17,15 +17,22 @@ AFRAME.registerComponent('zoom-ui', {
         this.lastZoomPercent = null;
         this.zoomTimeout = null;
         this.isZooming = false;
+        this._boundOnZoom = this.onZoom.bind(this); // For removal
+        this.lastDistance = null; // Track last camera distance
 
-        // Add zoom event listeners
         const camera = document.querySelector('#camera');
         if (camera) {
-            // Listen to orbit-controls events directly
+            // Attach immediately if orbit-controls already initialized
+            if (camera.components && camera.components['orbit-controls'] && camera.components['orbit-controls'].controls) {
+                camera.components['orbit-controls'].controls.addEventListener('change', this._boundOnZoom);
+                //console.log('[zoom-ui] Attached change listener immediately');
+            }
+            // Also listen for future initialization
             camera.addEventListener('componentinitialized', (e) => {
                 if (e.detail.name === 'orbit-controls') {
                     const controls = camera.components['orbit-controls'].controls;
-                    controls.addEventListener('change', this.onZoom.bind(this));
+                    controls.addEventListener('change', this._boundOnZoom);
+                    //console.log('[zoom-ui] Attached change listener on componentinitialized');
                 }
             });
         }
@@ -40,7 +47,21 @@ AFRAME.registerComponent('zoom-ui', {
     },
 
     onZoom: function() {
-        console.log('[zoom-ui] Zoom event detected');
+        // Only show UI if distance changed (i.e., zoom, not pan/rotate)
+        const camera = document.querySelector('#camera');
+        if (!camera) return;
+        const controls = camera.components['orbit-controls'];
+        if (!controls || !controls.controls) return;
+        const threeControls = controls.controls;
+        const currentDistance = threeControls.object.position.distanceTo(threeControls.target);
+
+        if (this.lastDistance !== null && Math.abs(currentDistance - this.lastDistance) < 1e-5) {
+            // No zoom, just pan/rotate
+            return;
+        }
+        this.lastDistance = currentDistance;
+
+        //console.log('[zoom-ui] Zoom event detected');
         this.isZooming = true;
 
         // Show zoom panel
@@ -74,16 +95,24 @@ AFRAME.registerComponent('zoom-ui', {
         const threeControls = controls.controls;
         const currentDistance = threeControls.object.position.distanceTo(threeControls.target);
         
-        // Get min and max distance from orbit-controls attribute
-        const orbitAttr = camera.getAttribute('orbit-controls');
-        const minDistance = orbitAttr.minDistance || 0.01;
-        const maxDistance = orbitAttr.maxDistance || 0.085;
+        // Prefer global config for min/max distance
+        let minDistance = 0.01;
+        let maxDistance = 0.085;
+        if (window.currentModelConfig && window.currentModelConfig.orbitControls) {
+            minDistance = window.currentModelConfig.orbitControls.minDistance ?? minDistance;
+            maxDistance = window.currentModelConfig.orbitControls.maxDistance ?? maxDistance;
+        } else {
+            // Fallback to orbit-controls attribute if present
+            const orbitAttr = camera.getAttribute('orbit-controls');
+            if (orbitAttr.minDistance) minDistance = orbitAttr.minDistance;
+            if (orbitAttr.maxDistance) maxDistance = orbitAttr.maxDistance;
+        }
         
         let zoomPercent = ((maxDistance - currentDistance) / (maxDistance - minDistance)) * 100;
         zoomPercent = Math.max(0, Math.min(100, Math.round(zoomPercent)));
 
-        // Update zoom value if we're zooming
-        if (this.isZooming && this.zoomDisplay) {
+        // Always update zoom value
+        if (this.zoomDisplay) {
             this.zoomDisplay.textContent = zoomPercent + '%';
         }
     },
@@ -94,11 +123,9 @@ AFRAME.registerComponent('zoom-ui', {
             clearTimeout(this.zoomTimeout);
         }
         const camera = document.querySelector('#camera');
-        if (camera) {
-            const controls = camera.components['orbit-controls'];
-            if (controls && controls.controls) {
-                controls.controls.removeEventListener('change', this.onZoom);
-            }
+        if (camera && camera.components && camera.components['orbit-controls'] && camera.components['orbit-controls'].controls) {
+            camera.components['orbit-controls'].controls.removeEventListener('change', this._boundOnZoom);
+            //console.log('[zoom-ui] Removed change listener');
         }
     }
 }); 

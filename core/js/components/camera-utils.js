@@ -4,17 +4,7 @@
  */
 
 AFRAME.registerComponent('camera-utils', {
-    schema: {
-        minPolarAngle: { type: 'number', default: 10 },
-        maxPolarAngle: { type: 'number', default: 170 },
-        minAzimuthAngle: { type: 'number', default: -180 },
-        maxAzimuthAngle: { type: 'number', default: 180 },
-        minDistance: { type: 'number', default: 0.1 },
-        maxDistance: { type: 'number', default: 1 },
-        rotateSpeed: { type: 'number', default: 0.5 },
-        dampingFactor: { type: 'number', default: 0.1 },
-        zoomSpeed: { type: 'number', default: 1 }
-    },
+    schema: {}, // No schema needed since orbit-controls handles all camera parameters
 
     init: function() {
         // Bind methods to this component

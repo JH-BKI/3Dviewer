@@ -9,6 +9,23 @@ function stripQuotes(str) {
     return str.replace(/^['"]+|['"]+$/g, '');
 }
 
+// Place this helper outside the component definition
+function waitForClassAndFocus(btn, className, maxTries = 10, delay = 10) {
+    let tries = 0;
+    function tryFocus() {
+        if (btn.classList.contains(className)) {
+            // console.log('[OnboardingGuide] Class added, focusing button');
+            btn.focus();
+            btn.dispatchEvent(new Event('mouseover'));
+            
+        } else if (tries < maxTries) {
+            tries++;
+            setTimeout(tryFocus, delay);
+        }
+    }
+    tryFocus();
+}
+
 AFRAME.registerComponent('onboarding-guide', {
     schema: {
         // Camera movement settings
@@ -25,13 +42,13 @@ AFRAME.registerComponent('onboarding-guide', {
         idleOrbitSpeed: { type: 'number', default: 5 }, // deg/sec
         
         // Timing settings
-        initialDelay: { type: 'number', default: 1000 },  // ms before first show
+        initialDelay: { type: 'number', default: 0 },  // ms before first show
         cooldown: { type: 'number', default: 10000 },  // ms of inactivity before showing again
-        maxDisplayTime: { type: 'number', default: 5000 }  // maximum time to show UI (ms)
+        maxDisplayTime: { type: 'number', default: 3000 }  // maximum time to show UI (ms)
     },
 
     init: function() {
-        console.log('[OnboardingGuide] Component initialized');
+        // console.log('[OnboardingGuide] Component initialized');
         
         // State management
         this.isActive = false;
@@ -63,7 +80,7 @@ AFRAME.registerComponent('onboarding-guide', {
         
         // Add event listeners
         this.el.sceneEl.addEventListener('model-loaded', () => {
-            console.log('[OnboardingGuide] Model loaded event received');
+            // console.log('[OnboardingGuide] Model loaded event received');
             // Reset state for new model
             this.isActive = false;
             this.isAnimating = false;
@@ -72,7 +89,7 @@ AFRAME.registerComponent('onboarding-guide', {
             this.lastInteraction = Date.now();
             // Start initial guide after delay
             setTimeout(() => {
-                console.log('[OnboardingGuide] Starting guide after initial delay');
+                // console.log('[OnboardingGuide] Starting guide after initial delay');
                 this.startGuide();
             }, this.data.initialDelay);
         });
@@ -111,20 +128,6 @@ AFRAME.registerComponent('onboarding-guide', {
         // Create container
         this.uiContainer = document.createElement('div');
         this.uiContainer.className = 'onboarding-guide';
-        this.uiContainer.style.cssText = `
-            position: fixed;
-            bottom: 15%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            text-align: center;
-            z-index: 9999;
-            display: none;
-            pointer-events: none;
-            background: rgba(41, 66, 255, 0.65);
-            padding: 1rem;
-            border-radius: 1rem;
-        `;
               
         // Create message
         this.messageEl = document.createElement('p');
@@ -185,21 +188,24 @@ AFRAME.registerComponent('onboarding-guide', {
         this.stopIdleOrbit();
         this.resetIdleOrbitTimer();
         if (this.isActive) {
-            console.log('[OnboardingGuide] Guide already active, skipping start');
+            // console.log('[OnboardingGuide] Guide already active, skipping start');
             return;
         }
         
-        console.log('[OnboardingGuide] Starting guide');
+        // console.log('[OnboardingGuide] Starting guide');
         this.isActive = true;
         this.isAnimating = true;
         
         // Update UI
-        this.messageEl.textContent = stripQuotes(this.data.message);
+        let msg = stripQuotes(this.data.message);
+        msg = msg.replace(/\\n/g, '<br>'); // Replace literal \n
+        msg = msg.replace(/\n/g, '<br>');  // Replace actual newlines
+        this.messageEl.innerHTML = msg;
         
         // Update image if provided
         const cleanImageUrl = stripQuotes(this.data.imageUrl);
         if (cleanImageUrl) {
-            console.log('[OnboardingGuide] Loading image:', cleanImageUrl);
+            // console.log('[OnboardingGuide] Loading image:', cleanImageUrl);
             this.imageContainer.innerHTML = `<img src="${cleanImageUrl}" style="max-width: 48px; height: auto;">`;
         }
         
@@ -208,7 +214,7 @@ AFRAME.registerComponent('onboarding-guide', {
         
         // Set maximum display time
         this.displayTimer = setTimeout(() => {
-            console.log('[OnboardingGuide] Maximum display time reached, hiding UI');
+            // console.log('[OnboardingGuide] Maximum display time reached, hiding UI');
             this.hideUI();
             this.isAnimating = false;
             this.isActive = false;
@@ -225,6 +231,17 @@ AFRAME.registerComponent('onboarding-guide', {
         }, this.data.cooldown);
     },
 
+    showButtonTooltips: function() {
+        document.querySelectorAll('.overlay-buttons').forEach(btn => {
+            btn.setAttribute('data-balloon-visible', '');
+        });
+    },
+    hideButtonTooltips: function() {
+        document.querySelectorAll('.overlay-buttons').forEach(btn => {
+            btn.removeAttribute('data-balloon-visible');
+        });
+    },
+
     showUI: function() {
         if (!this.uiContainer) return;
         this.uiContainer.classList.remove('fade-out');
@@ -232,6 +249,7 @@ AFRAME.registerComponent('onboarding-guide', {
         void this.uiContainer.offsetWidth;
         this.uiContainer.classList.add('fade-in');
         this.startSway();
+        this.showButtonTooltips();
     },
 
     hideUI: function() {
@@ -246,6 +264,7 @@ AFRAME.registerComponent('onboarding-guide', {
             }
             this.stopSway();
             this.resetIdleOrbitTimer();
+            this.hideButtonTooltips();
         }, 400);
     },
 
