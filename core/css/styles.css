@@ -74,6 +74,10 @@ a-scene {
     top: 6rem;
 }
 
+#explode-toggle {
+    left: 1rem;
+    top: 11rem;
+}
 
 .onboarding-guide{
     position: fixed;

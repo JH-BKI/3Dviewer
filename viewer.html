@@ -9,6 +9,7 @@
     <script src="./core/js/components/spatial-hotspot.js"></script>
     <script src="./core/js/components/camera-utils.js"></script>
     <script src="./core/js/mixins/rotation-visualizer.js"></script>
+    <script src="./core/js/components/exploded-view.js"></script>
     <!-- <script src="./core/js/components/orbit-controls-patch.js"></script> -->
     <script src="./core/js/components/onboarding-guide.js"></script>
     <script src="./core/js/components/ui-overlay.js"></script>
@@ -57,31 +58,6 @@
   <body>
 
 
-
-    <!-- <nav id="navbarBottom" class="navbar is-fixed-bottom has-shadow">
-        <div id="navbarExample" class="navbar-brand">
-          <div class="navbar-start">
-            <div class="navbar-item">
-                <button class="button is-light" onclick="window.cameraUtils.resetCamera()">
-                    <span class="icon">
-                        <i class="fas fa-sync-alt"></i>
-                    </span>
-                    <span>Reset View</span>
-                </button>
-            </div>
-            <div class="navbar-item">
-                <div class="select">
-                    <select id="modelDropdown">
-                        <option>Loading models...</option>
-                    </select>
-                </div>
-            </div>
-            <div class="navbar-item">
-                <p>3D Model Viewer</p>              
-           </div>
-          </div>
-        </div>
-      </nav> -->
 
       <div class="ui-container" > 
         
@@ -231,7 +207,8 @@
       raycaster="objects: [cursor-listener]"
       camera-utils
       zoom-ui
-      loading-screen="dotsColor: white; backgroundColor: black">
+      loading-screen="dotsColor: white; backgroundColor: black"
+      exploded-view="enabled: true; animationDuration: 1000; explosionDistance: 0.5">
 
       <a-entity ui-overlay></a-entity>
       <!-- View cube HUD will be rendered in a fixed HTML container -->
@@ -242,68 +219,6 @@
 
         <!-- Move sky before other elements to ensure it loads first -->
         <a-sky src="#sceneBg" rotation="0 0 0"></a-sky>
-
-        <!-- Example SpatialHotspot -->
-        <!--
-            You can now use orbit-based camera views:
-            spatial-hotspot="
-                ...
-                lookAt: x y z;
-                orbitAzimuth: 45;         (degrees)
-                orbitElevation: 60;       (degrees)
-                orbitDistance: 1.5;       (meters)
-                ...
-            "
-            This will move the camera to the specified orbit around the lookAt point.
-        -->
-        <!-- <a-sphere 
-            position="-0.2 0.2 0" 
-            radius="0.025" 
-            color="#4CC3D9"
-            cursor-listener
-            class="clickable"
-            spatial-hotspot="
-                isInteractable: true;
-                lookAt: 0.001 0.077 -0.12;
-                orbitAzimuth: 45;
-                orbitElevation: 60;
-                orbitDistance: 0.5;
-                duration: 1000;
-                isTrigger: true;
-                title: 'Example Orbit Hotspot';
-                titleOffset: 0 0.2 0;
-                label: 'Click to orbit';
-                labelOffset: 0 0.1 0;
-                drawLine: true;
-                lineStyle: color: #4CC3D9; style: solid; opacity: 0.5; width: 4
-            ">
-        </a-sphere>
--->
-
-  
-
-        <!-- <a-box 
-        position="0.1 0.1 0" 
-        scale="0.01 0.01 0.01" 
-        color="#ff0000"></a-box>  -->
-
-        <!-- Example rotation visualizer -->
-        <!-- <a-entity 
-            position="0.2 0.1 -0.1"
-            cursor-listener
-            class="clickable"
-            rotation-visualizer="
-                size: 0.025;
-                indicatorLength: 0.035;
-                indicatorWidth: 0.01;
-                cubeColor: #FFFFFF;
-                indicatorColor: #FF0000;
-            ">
-        </a-entity> -->
-
-        <!-- Add VR hands
-        <a-entity id="leftHand" oculus-touch-controls="hand: left"></a-entity>
-        <a-entity id="rightHand" oculus-touch-controls="hand: right"></a-entity> -->
 
           <a-light type="ambient" color="#ffffff" intensity="0.65"></a-light>
           <a-light type="directional" color="#fff" intensity="1" position="3.3 4 1.5"></a-light>
@@ -352,7 +267,7 @@
 
 <script>
 
-let version = 'v0.99.20250529:1635';
+let version = 'v0.99.20250603:0937';
 
 // Model dropdown and config logic
 let modelConfig = null;
@@ -601,14 +516,17 @@ async function loadModelByIndex(idx) {
   const model = modelConfig.models[idx];
   if (!model) return;
   currentModelConfig = model; // <-- Store for reset button
+  
   // Remove previous model entity
   if (currentModelEntity) {
     currentModelEntity.parentNode.removeChild(currentModelEntity);
     currentModelEntity = null;
   }
+  
   // Remove previous hotspots
   currentHotspots.forEach(h => h.parentNode.removeChild(h));
   currentHotspots = [];
+  
   // Add new model entity
   const scene = document.querySelector('a-scene');
   const entity = document.createElement('a-entity');
@@ -628,8 +546,6 @@ async function loadModelByIndex(idx) {
                          model.orbitControls.InitialAzimuthAngle,
                          model.orbitControls.InitialZoomAmmount,
                          model.orbitControls.ZoomMaxDistance);
-
-    //console.log(model.orbitControls);
 
     // Add hotspots
     if (model.hotspots) {

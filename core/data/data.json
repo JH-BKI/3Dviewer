@@ -2,27 +2,27 @@
   "models": [
     {
       "id": "colgatebox",
-      "filename": "colgateboxcomplete.glb",
+      "filename": "cubes.gltf",
       "modelPosition": { "x": 0, "y": 0, "z": 0 },
       "modelRotation": { "x": 0, "y": 0, "z": 0 },
       "orbitControls": {
         "InitialPolarAngle": 45,
         "InitialAzimuthAngle": 0,
-        "ZoomMaxDistance": 0.5,
-        "InitialZoomAmmount": 0.5
+        "ZoomMaxDistance": 13.5,
+        "InitialZoomAmmount": 13.5
       },
       "hotspots": []
     },
     {
       "id": "tubebox",
-      "filename": "tubebox.glb",
+      "filename": "vehicles.glb",
       "modelPosition": { "x": 0, "y": 0, "z": 0 },
       "modelRotation": { "x": 90, "y": 0, "z": 0 },
       "orbitControls": {
         "InitialPolarAngle": 90,
         "InitialAzimuthAngle": 0,
-        "ZoomMaxDistance": 0.085,
-        "InitialZoomAmmount": 0.085
+        "ZoomMaxDistance": 13.085,
+        "InitialZoomAmmount": 13.085
       },
       "hotspots": []
     },
