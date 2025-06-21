@@ -1,0 +1,349 @@
+html{
+    font-size: 14px;
+}
+
+
+:root {
+
+    /* standard timings */
+    --xrs-duration-short: 0.25s;
+    --xrs-duration-medium: 0.5s;
+    --xrs-duration-long: 1s;
+
+
+    /* padding defaults*/
+    --xrs-padding-default: 0.5rem;
+    --xrs-padding-double: calc(var(--xrs-padding-default) * 2);
+    --xrs-padding-triple: calc(var(--xrs-padding-default) * 3);
+
+
+    --xrs-black-15percent: rgba(0, 0, 0, 0.15);
+    --xrs-black-25percent: rgba(0, 0, 0, 0.25);
+    --xrs-black-50percent: rgba(0, 0, 0, 0.50);
+    --xrs-black-75percent: rgba(0, 0, 0, 0.75);
+
+
+    /* background colors 
+        navbars, panels, etc.
+    */
+    --xrs-text-color: #FFF;
+    --xrs-text-shadow: 1px 2px 3px #000;
+    --xrs-background-color: rgba(79, 79, 79, 0.90);
+    --xrs-background-color-gradient: linear-gradient(0deg,rgba(0, 0, 0, 0.75) 0%, rgba(50,50,50, 0.55) 100%);
+    --xrs-navbar-background-color-gradient: linear-gradient(0deg,rgba(0, 0, 0, 0.75) 0%, rgba(50,50,50, 0.25) 100%);
+    
+    
+    /* buttons */
+    --xrs-button-color: #FFF;
+    --xrs-button-color-hover: #FFF;
+    --xrs-button-color-active: #FFF;
+    --xrs-button-background-color: rgba(0, 0, 0, 0.15);
+    --xrs-button-background-color-hover: rgba(28, 105, 212, 0.65);
+    --xrs-button-background-color-active: rgba(28, 105, 212, 0.90);
+
+    /* to configure */
+    --xrs-control-radius: 0.25rem;
+    --xrs-control-border-width: 0.1rem;
+
+    --xrs-control-size: 1rem;
+    --xrs-control-height: 2rem;
+    --xrs-control-line-height: 1.5;
+    --xrs-control-padding-vertical: calc(0.5rem - 1px);
+    --xrs-control-padding-horizontal: calc(0.75rem - 1px);
+}   
+
+
+button, .button, select, textarea, input {
+    /* z-index & pointer events */
+    cursor: pointer;
+    /* display properties */
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    /* position properties */
+    position: relative;
+    /* dimensions, margins, padding, etc. */
+    height: var(--xrs-control-height);
+    padding: var(--xrs-control-padding-vertical) var(--xrs-control-padding-horizontal);
+    vertical-align: top;
+
+    /* colours and style properties */
+    border-color: transparent;
+    border-radius: var(--xrs-control-radius);
+    border-style: solid;
+    border-width: var(--xrs-control-border-width);
+    box-shadow: none;
+    filter: drop-shadow(0px 0px 10px rgba(0, 0, 0, 0.5));
+    text-shadow: 1px 2px 3px #000;
+
+    font-size: var(--xrs-control-size);
+    line-height: var(--xrs-control-line-height);
+    transition-duration: var(--xrs-duration-short);
+    transition-property: background-color, border-color, box-shadow, color;
+
+}
+
+.button {
+    /* z-index & pointer events */
+    /* display properties */
+    display: block;
+    /* position properties */
+    /* dimensions, margins, padding, etc. */
+    height: 3.2rem;
+    width: auto;
+    min-width: 3.2rem;
+
+    padding: 0.5rem;
+    /* colours and style properties */
+
+    background: var(--xrs-button-background-color);
+    color: var(--xrs-button-color);
+
+    font-family: inherit;
+    font-size: 1rem;
+    white-space: nowrap;
+
+    &:hover { 
+        background-color: var(--xrs-button-background-color-hover);
+        color: var(--xrs-button-color-hover);
+    }
+
+    &:active { 
+        background-color: var(--xrs-button-background-color-active);
+        color: var(--xrs-button-color-active);
+    }
+
+
+
+    /* drop-down start ========================================================================== */
+
+    &.dropmenu {
+        width: 6rem;
+    }
+
+    &.dropmenu .label {
+        white-space: nowrap;         /* Prevents wrapping */
+        overflow: hidden;            /* Hides overflowing text */
+        text-overflow: ellipsis;
+    }
+
+    &.dropmenu .dropmenu-menu {
+        /* z-index & pointer events */
+        /* display properties */
+        /* position properties */
+        /* dimensions, margins, padding, etc. */
+        /* colours and style properties */
+
+        background: var(--xrs-background-color);
+        background: var(--xrs-background-color-gradient);
+        display: none;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 100%;
+        margin-bottom: 0.5rem;
+        border-radius: 0.25rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        width: 6rem;
+        flex-direction: column;
+        overflow: hidden;
+    } 
+
+    &.dropmenu.active .dropmenu-menu {
+        display: flex;
+    }
+
+    & .dropmenu-item, & .dropmenu-title {
+        /* z-index & pointer events */
+        /* display properties */
+        /* position properties */
+        /* dimensions, margins, padding, etc. */
+        /* colours and style properties */
+        
+        cursor: pointer;
+        color: #FFF;
+        border: transparent;
+        border-radius: 0;
+        text-align: left;
+        font-size: 1em;
+        width: 100%;
+        height: 3rem;
+        display: block;
+    }
+
+    & .dropmenu-item:hover { 
+        background-color: var(--xrs-button-background-color-hover);
+        color: var(--xrs-button-color-hover);
+    }
+
+    & .dropmenu-item.selected { 
+        background-color: var(--xrs-button-background-color-active);
+        color: var(--xrs-button-color-active);
+        border-left: 0.5rem solid var(--xrs-black-25percent);
+        padding-left: 0.25rem
+    }
+
+
+    & .dropmenu-title {
+        height: 6rem;
+        padding: 0.75rem 0.5rem;
+        background: rgba(255, 255, 255, 0.05);
+        text-align: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.3); 
+        white-space: normal !important;
+        word-break: break-word;    
+    }
+
+    & .scrollable{
+        max-height: 13rem;
+    }
+
+    /* drop-down end ========================================================================== */
+
+}
+
+
+.button.browser-model-animation-name-selector {
+    width: calc(100% + 0.5rem);
+    min-width: 8rem;
+    max-width: 16rem;
+    padding-right: 0.5rem;
+
+    & .dropmenu-title {
+        height: 4.5rem;
+    }
+    
+    & .dropmenu-menu {
+        width: 14rem;
+    }
+
+}
+
+.scrollable{
+    overflow-y: scroll;
+    border-top: 1px solid rgba(0, 0, 0, 0.35);
+}
+
+
+
+.icon {
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: 0.55rem;
+
+    & > i {
+        margin: 0px;
+        line-height: 1.3em;
+    }   
+
+    & span {
+        white-space: nowrap;         /* Prevents wrapping */
+        overflow: hidden;            /* Hides overflowing text */
+        text-overflow: ellipsis;
+    }
+
+    & .selection-label {
+        font-weight: 500;
+    }
+}
+
+.xrs_uicontainer {
+    z-index: 1;
+    position: fixed;
+
+
+/* Base element */
+    & .scrollable {
+        overflow-y: auto;
+        scrollbar-color: #555 #1a1a1a;  /* Firefox: thumb, track */
+
+    }
+    
+    /* WebKit: Chrome, Edge, Oculus Browser */
+    & .scrollable::-webkit-scrollbar {
+        width: 1rem;
+        height: 1rem;
+    }
+    
+    & .scrollable::-webkit-scrollbar-track {
+        background: #1a1a1a;           /* Dark track */
+        border-radius: 0.25rem;
+    }
+    
+    & .scrollable::-webkit-scrollbar-thumb {
+        background: #555;              /* Thumb color */
+        border-radius: 0.25rem;
+    }
+    
+    & .scrollable::-webkit-scrollbar-thumb:hover {
+        background: #777;              /* Thumb on hover */
+    }
+
+    & .text {
+        color: var(--xrs-text-color);
+        text-shadow: var(--xrs-text-shadow);
+    }
+
+
+}
+
+.xrs_navbar {
+    z-index: 2;
+    pointer-events: none;
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    position: fixed;
+    bottom: 0;
+
+    width: 100%;
+    height: 5rem;
+    padding: var(--xrs-padding-double);
+    
+
+
+    /* border-top: 0px solid rgba(255, 255, 255, 0.35); */
+    background: transparent;
+
+
+    & .start, & .end {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        pointer-events: all;
+    }
+    
+
+    & .nav-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-evenly;
+        gap: 1rem;
+    }
+
+}
+
+.xrs_navbar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--xrs-navbar-background-color-gradient);
+    opacity: 0;
+    transition: opacity 1s ease 1s;
+    z-index: -1; /* ensure it's behind the content */
+    pointer-events: none;
+  }
+  
+  .xrs_navbar:hover::before {
+    opacity: 1;
+    transition: opacity 0.5s ease;
+  }
+
+

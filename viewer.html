@@ -3,26 +3,42 @@
   <head>
     <meta charset="utf-8" />
     <title>3D Model Viewer</title>
+    <!-- first, run the loading screen -->
+    <script src="./core/js/components/ui/loader-initial.js"></script>
+    <script>
+      window.fadeInLoadingScreen();
+    </script>
+    <script src="./core/js/pkg/globalUtils.js"></script>
     <script src="./core/js/pkg/aframe.min.js"></script> <!-- https://aframe.io/releases/1.7.0/aframe.min.js -->
+    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.5.4/dist/aframe-extras.min.js"></script>
     <script src="./core/js/pkg/aframe-orbit-controls.min.js"></script> <!-- https://unpkg.com/aframe-orbit-controls@1.3.2/dist/aframe-orbit-controls.min.js -->
     <script src="./core/js/debug.js"></script>
-    <script src="./core/js/components/spatial-hotspot.js"></script>
     <script src="./core/js/components/camera-utils.js"></script>
-    <script src="./core/js/mixins/rotation-visualizer.js"></script>
-    <!-- <script src="./core/js/components/orbit-controls-patch.js"></script> -->
+
     <script src="./core/js/components/onboarding-guide.js"></script>
     <script src="./core/js/components/ui-overlay.js"></script>
     <script src="./core/js/components/zoom-ui.js"></script>
-    <!-- <script src="./core/js/components/orbit-path-visualizer.js"></script> -->
-    <!-- <<script src="./core/js/components/view-cube.js"></script> -->
-        <!-- Only the modular HUD view cube script should remain for the view cube -->
-        <!-- <script src="./core/js/components/view-cube-hud.js"></script> -->
-    <link rel="stylesheet" href="./core/css/pkg/bulma.min.css"> <!-- https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css -->
+    
+    <!-- UI components -->
+    <script src="./core/js/components/ui/button-dropmenu.js"></script>
+    <script src="./core/js/components/ui/button-toggle.js"></script>
+
+    <!-- controllers -->
+    <script src="./core/js/components/controllers/device-presentation-controller.js"></script>
+    <script src="./core/js/components/controllers/model-loader-controller.js"></script>
+    <script src="./core/js/components/controllers/model-animation-controller.js"></script>
+
+
+    <link href="https://cdn.jsdelivr.net/npm/modern-normalize@3.0.1/modern-normalize.min.css" rel="stylesheet">
+    <!-- <link rel="stylesheet" href="./core/css/pkg/bulma.min.css">
+     <!-- https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css -->
     <link rel="stylesheet" href="./core/css/pkg/balloon.css"> <!-- https://cdn.jsdelivr.net/npm/bulma-tooltip@2.0.2/dist/css/bulma-tooltip.min.css -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"> <!-- https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css -->
     <link rel="stylesheet" href="./core/css/styles.css">
+    <link rel="stylesheet" href="./core/css/xrs_styles.css">
+    
   </head>
-<body>
+<body class="has-navbar-fixed-bottom">
     <script>
         function DeviceActivate() {           
             const expandIcon = document.querySelector('.fa-expand');
@@ -38,19 +54,7 @@
             }
         }
 
-        // Wait for both DOM and A-Frame to be ready
-        document.addEventListener('DOMContentLoaded', () => {
-            const scene = document.querySelector('a-scene');
-            if (scene) {
-                scene.addEventListener('loaded', () => {
-                    initDebug();
-                    // Add camera-utils to the scene
-                    scene.setAttribute('camera-utils', '');
-                    // Reset camera using the new component
-                    ResetCameraAllValues(90, 0);
-                });
-            }
-        });
+ 
     </script>
   </head>
   
@@ -58,45 +62,8 @@
 
 
 
-    <!-- <nav id="navbarBottom" class="navbar is-fixed-bottom has-shadow">
-        <div id="navbarExample" class="navbar-brand">
-          <div class="navbar-start">
-            <div class="navbar-item">
-                <button class="button is-light" onclick="window.cameraUtils.resetCamera()">
-                    <span class="icon">
-                        <i class="fas fa-sync-alt"></i>
-                    </span>
-                    <span>Reset View</span>
-                </button>
-            </div>
-            <div class="navbar-item">
-                <div class="select">
-                    <select id="modelDropdown">
-                        <option>Loading models...</option>
-                    </select>
-                </div>
-            </div>
-            <div class="navbar-item">
-                <p>3D Model Viewer</p>              
-           </div>
-          </div>
-        </div>
-      </nav> -->
-
+ 
       <div class="ui-container" > 
-        
-        <div class="loading-container">
-          <div id="loading-outer">
-            <div id="loading-inner">
-              <div id="back"></div>
-              <div id="top"></div>
-              <div id="bottom"></div>
-              <div id="left"></div>
-              <div id="right"></div>
-            </div>
-          </div>
-          <p class="is-size-4">LOADING...</p>
-        </div>
 
         <div class="buttons-container">
           <button class="button is-medium is-link overlay-buttons" data-balloon-pos="right" aria-label="Model selection" id="general-info-toggle">
@@ -108,13 +75,18 @@
           <i class="fa-solid fa-expand maximise-view" aria-hidden="true" style="display:block;"></i>
           </button>
 
-          <button class="button is-medium is-link overlay-buttons" data-balloon-pos="right" aria-label="Reset view" id="reset-camera" onclick="ResetCameraAllValues(45, 0)">
+          <button class="button is-medium is-link overlay-buttons" data-balloon-pos="right" aria-label="Reset view" id="reset-camera">
             <i class="fa-solid fa-sync-alt" aria-hidden="true"></i>
           </button>      
 
           <div id="zoomDisplay" class="box" role="status" aria-live="polite">
             <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><BR><span id="zoomValue">0%</span>
           </div>
+		  
+                <div animation-controls></div>
+
+                
+
         </div>
 
 
@@ -208,7 +180,47 @@
                             <h4 class="is-size-4">Duraphat Single Dose</h4>
                           </div>
                         </button>
-                      </div>                       
+                      </div>
+                      <div class="column">
+                        <button class="button model-selector-button is-link is-light" data-model="triceraptops">
+                            <div></div>
+                            <div>
+                              <h4 class="is-size-4">Triceraptops</h4>
+                            </div>
+                          </button>
+                        </div>
+                      <div class="column">
+                        <button class="button model-selector-button is-link is-light" data-model="frog">
+                          <div></div>
+                          <div>
+                            <h4 class="is-size-4">Frog</h4>
+                          </div>
+                        </button>
+                        </div>
+                      <div class="column">
+                        <button class="button model-selector-button is-link is-light" data-model="oxxo">
+                          <div></div>
+                          <div>
+                            <h4 class="is-size-4">oxxo</h4>
+                          </div>
+                      </button>
+                      </div>
+                      <div class="column">
+                        <button class="button model-selector-button is-link is-light" data-model="kitchen">  
+                          <div></div>
+                          <div>
+                            <h4 class="is-size-4">kitchen</h4>
+                          </div>
+                        </button>
+                      </div>     
+                     <div class="column">
+                        <button class="button model-selector-button is-link is-light" data-model="greenhouse">  
+                          <div></div>
+                          <div>
+                            <h4 class="is-size-4">greenhouse</h4>
+                          </div>
+                        </button>
+                      </div>  					  
                   </div>
                 
               </section>
@@ -225,85 +237,25 @@
 
 
     <a-scene
-      
+    
       xr-mode-ui="enabled: false"
       cursor="rayOrigin: mouse; fuse: false"
       raycaster="objects: [cursor-listener]"
-      camera-utils
       zoom-ui
-      loading-screen="dotsColor: white; backgroundColor: black">
+      loading-screen="dotsColor: white; backgroundColor: black"
+      model-loader-controller
+	  >
 
       <a-entity ui-overlay></a-entity>
       <!-- View cube HUD will be rendered in a fixed HTML container -->
-      <a-assets>
-            <a-asset-item id="modelSubject" src="./assets/3d/colgateboxcomplete.glb"></a-asset-item>
+        <a-assets>
             <img id="sceneBg" src="./assets/images/scene-background.jpg" alt="Scene background" crossorigin="anonymous">
         </a-assets>
 
         <!-- Move sky before other elements to ensure it loads first -->
         <a-sky src="#sceneBg" rotation="0 0 0"></a-sky>
 
-        <!-- Example SpatialHotspot -->
-        <!--
-            You can now use orbit-based camera views:
-            spatial-hotspot="
-                ...
-                lookAt: x y z;
-                orbitAzimuth: 45;         (degrees)
-                orbitElevation: 60;       (degrees)
-                orbitDistance: 1.5;       (meters)
-                ...
-            "
-            This will move the camera to the specified orbit around the lookAt point.
-        -->
-        <!-- <a-sphere 
-            position="-0.2 0.2 0" 
-            radius="0.025" 
-            color="#4CC3D9"
-            cursor-listener
-            class="clickable"
-            spatial-hotspot="
-                isInteractable: true;
-                lookAt: 0.001 0.077 -0.12;
-                orbitAzimuth: 45;
-                orbitElevation: 60;
-                orbitDistance: 0.5;
-                duration: 1000;
-                isTrigger: true;
-                title: 'Example Orbit Hotspot';
-                titleOffset: 0 0.2 0;
-                label: 'Click to orbit';
-                labelOffset: 0 0.1 0;
-                drawLine: true;
-                lineStyle: color: #4CC3D9; style: solid; opacity: 0.5; width: 4
-            ">
-        </a-sphere>
--->
-
-  
-
-        <!-- <a-box 
-        position="0.1 0.1 0" 
-        scale="0.01 0.01 0.01" 
-        color="#ff0000"></a-box>  -->
-
-        <!-- Example rotation visualizer -->
-        <!-- <a-entity 
-            position="0.2 0.1 -0.1"
-            cursor-listener
-            class="clickable"
-            rotation-visualizer="
-                size: 0.025;
-                indicatorLength: 0.035;
-                indicatorWidth: 0.01;
-                cubeColor: #FFFFFF;
-                indicatorColor: #FF0000;
-            ">
-        </a-entity> -->
-
-        <!-- Add VR hands
-        <a-entity id="leftHand" oculus-touch-controls="hand: left"></a-entity>
-        <a-entity id="rightHand" oculus-touch-controls="hand: right"></a-entity> -->
+   
 
           <a-light type="ambient" color="#ffffff" intensity="0.65"></a-light>
           <a-light type="directional" color="#fff" intensity="1" position="3.3 4 1.5"></a-light>
@@ -314,37 +266,40 @@
           <!-- <a-entity gltf-model="./assets/3d/colgateboxcomplete.glb" position="0 0 0" scale="1 1 1"></a-entity>                  -->
           
           <a-entity id="camera" camera look-controls="enabled: false" 
-          orbit-controls="target: 0 0 0; 
-          
-          autoRotate: true;
-          autoRotateSpeed: 0.1;
-          minPolarAngle: -10;  
-          maxPolarAngle: 180;
-          minDistance: 0.01; 
-          maxDistance: 0.085; 
-          initialPosition: 0 0 0; 
-          rotateSpeed: 0.5; 
-          enablePan: true;
-          enableDamping: true;
-          dampingFactor: 0.1;
-          enableRotate: true;
-          enableZoom: true;"
+              orbit-controls="
+                  target: 0 0 0;           
+                  autoRotate: true;
+                  autoRotateSpeed: 0.1;
+                  minPolarAngle: -10;  
+                  maxPolarAngle: 180;
+                  minDistance: 0.01; 
+                  maxDistance: 0.085; 
+                  initialPosition: 0 0 0; 
+                  rotateSpeed: 0.5; 
+                  enablePan: true;
+                  enableDamping: true;
+                  dampingFactor: 0.1;
+                  enableRotate: true;
+                  enableZoom: true;"
               onboarding-guide="
                   message: 'Click/touch and<BR>swipe to explore';
-                  imageUrl: ''./assets/images/onboarding-rotate.gif';">
+                  imageUrl: './assets/images/onboarding-rotate.gif';">
           </a-entity>
           
-          <!-- <a-entity id="camera" camera
-          orbit-controls="target: 0 0 0; minPolarAngle: 0; maxPolarAngle: 180; minAzimuthAngle: -180; maxAzimuthAngle: 180; minDistance: 0.1; maxDistance: 2; initialPosition: 0 0 0; rotateSpeed: 0.5; enablePan: true; enableDamping: true; dampingFactor: 0.1; enableRotate: true; enableZoom: true;">
-        </a-entity> -->
 
-      <!-- Orbit path visualizer -->
-      <!-- <a-entity orbit-path-visualizer></a-entity> -->
+
+
+        <div class="xrs_uicontainer">
+          <nav class="xrs_navbar" role="navigation" aria-label="dropdown navigation">
+              
+            <div class="start"></div>
+
+            <div class="end"></div>       
+              
+          </nav>
+        </div>
 
     </a-scene>
-  
-  
-  
   
   
   </body>
@@ -352,50 +307,17 @@
 
 <script>
 
-let version = 'v0.99.20250529:1635';
 
-// Model dropdown and config logic
-let modelConfig = null;
-let currentModelEntity = null;
-let currentHotspots = [];
-let currentModelConfig = null; // <-- Store the current model config globally
+
 
 
 
 // --- Unlimited azimuthal orbit fix ---
 document.addEventListener('DOMContentLoaded', () => {
-  const camera = document.querySelector('[camera]');
-  camera.addEventListener('componentinitialized', function handler(e) {
-    if (e.detail.name === 'orbit-controls') {
-      const controls = camera.components['orbit-controls'].controls;
-      if (controls) {
-        controls.minAzimuthAngle = -Infinity;
-        controls.maxAzimuthAngle = Infinity;
-      }
-      camera.removeEventListener('componentinitialized', handler);
-    }
-  });
-
-  // Set up model selector button click handlers
-  const modelButtons = document.querySelectorAll('.model-selector-button');
-  modelButtons.forEach(button => {
-    button.addEventListener('click', async () => {
-      const modelId = button.getAttribute('data-model');
-      if (!modelConfig) {
-        const response = await fetch('./core/data/data.json');
-        modelConfig = await response.json();
-      }
-      const modelIndex = modelConfig.models.findIndex(m => m.id === modelId);
-      if (modelIndex !== -1) {
-        loadModelByIndex(modelIndex);
-        // Hide the model selector modal
-        const selectorContainer = document.querySelector('.model-selector-container');
-        if (selectorContainer) {
-          selectorContainer.style.display = 'none';
-        }
-      }
-    });
-  });
+  // Set up unlimited azimuthal rotation using camera-utils
+  if (window.cameraUtils) {
+    window.cameraUtils.setUnlimitedAzimuthalRotation();
+  }
 
   // Set up cancel button click handler
   const cancelButton = document.getElementById('cancel-model-selector-button');
@@ -412,12 +334,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const resetBtn = document.getElementById('reset-camera');
   if (resetBtn) {
     resetBtn.addEventListener('click', () => {
-      if (currentModelConfig && currentModelConfig.orbitControls) {
-        ResetCameraAllValues(
-          currentModelConfig.orbitControls.InitialPolarAngle,
-          currentModelConfig.orbitControls.InitialAzimuthAngle,
-          currentModelConfig.orbitControls.InitialZoomAmmount,
-          currentModelConfig.orbitControls.ZoomMaxDistance
+      if (window.currentModelConfig && window.currentModelConfig.orbitControls && window.cameraUtils) {
+        window.cameraUtils.resetCameraAllValues(
+          window.currentModelConfig.orbitControls.InitialPolarAngle,
+          window.currentModelConfig.orbitControls.InitialAzimuthAngle,
+          window.currentModelConfig.orbitControls.InitialZoomAmmount,
+          window.currentModelConfig.orbitControls.ZoomMaxDistance
         );
       }
     });
@@ -592,71 +514,146 @@ function updateInitialPosition(vectorStr) {
 
 
 
-async function loadModelConfig() {
-  const response = await fetch('./core/data/data.json');
-  modelConfig = await response.json();
-}
 
-async function loadModelByIndex(idx) {
-  const model = modelConfig.models[idx];
-  if (!model) return;
-  currentModelConfig = model; // <-- Store for reset button
-  // Remove previous model entity
-  if (currentModelEntity) {
-    currentModelEntity.parentNode.removeChild(currentModelEntity);
-    currentModelEntity = null;
-  }
-  // Remove previous hotspots
-  currentHotspots.forEach(h => h.parentNode.removeChild(h));
-  currentHotspots = [];
-  // Add new model entity
-  const scene = document.querySelector('a-scene');
-  const entity = document.createElement('a-entity');
-  entity.setAttribute('gltf-model', `assets/3d/${model.filename}`);
-  const pos = model.modelPosition || { x: 0, y: 0, z: 0 };
-  const rot = model.modelRotation || { x: 0, y: 0, z: 0 };
-  entity.setAttribute('position', `${pos.x} ${pos.y} ${pos.z}`);
-  entity.setAttribute('rotation', `${rot.x} ${rot.y} ${rot.z}`);
-  entity.setAttribute('scale', '1 1 1');
-  scene.appendChild(entity);
-  currentModelEntity = entity;
+// document.getElementById("animationDropdown").addEventListener("change", (event) => {
+//     const selectedAnimation = event.target.value;
+// 	animationStatusValues["currentAnimation"] = selectedAnimation;
+// 	SetAnimProp("clip", animationStatusValues["currentAnimation"]);
+// 	SetPlayHighlights(document.getElementById("animationPlay"));
+// });
 
-  // Wait for model to load before updating camera/controls
-  entity.addEventListener('model-loaded', () => {
-    // Reset camera using the new method
-    ResetCameraAllValues(model.orbitControls.InitialPolarAngle, 
-                         model.orbitControls.InitialAzimuthAngle,
-                         model.orbitControls.InitialZoomAmmount,
-                         model.orbitControls.ZoomMaxDistance);
+// document.getElementById("animationPlay").addEventListener("click", (event) => {
+//     SetAnimProp("timeScale",animationStatusValues["currentSpeed"]);
+// 		SetAnimProp("clip", animationStatusValues["currentAnimation"]);
+// 	SetPlayHighlights(document.getElementById("animationPlay"));
+// 	const entity = document.getElementById("3D-object");
+// 	 var mixer = entity.components["animation-mixer"];
+// 		mixer.playAction(mixer.activeAction); // Restart the animation
+// });
+// document.getElementById("animationPause").addEventListener("click", (event) => {
+//     SetAnimProp("timeScale", "0");
+// 	SetPlayHighlights(document.getElementById("animationPause"));
+// 		const entity = document.getElementById("3D-object");
+// 	 var mixer = entity.components["animation-mixer"];
+// 		mixer.playAction(mixer.activeAction); // Restart the animation
+// });
+// document.getElementById("animationPlayLoop").addEventListener("click", (event) => {
+//     animationStatusValues["currentLoop"]="repeat";
+//     SetAnimProp("loop", animationStatusValues["currentLoop"]);
+// 	SetLoopHighlights(document.getElementById("animationPlayLoop"));
+// });
+// document.getElementById("animationPlayOnce").addEventListener("click", (event) => {
+//     animationStatusValues["currentLoop"]="once";
+//     SetAnimProp("loop", animationStatusValues["currentLoop"]);
+// 	SetLoopHighlights(document.getElementById("animationPlayOnce"));
+// });
+// document.getElementById("animationSpeed-0.1").addEventListener("click", (event) => {
+//     animationStatusValues["currentSpeed"]="0.1";
+//     SetAnimProp("timeScale", animationStatusValues["currentSpeed"]);
+// 	SetSpeedHighlights(document.getElementById("animationSpeed-0.1"));
+// });
+// document.getElementById("animationSpeed-0.5").addEventListener("click", (event) => {
+//     animationStatusValues["currentSpeed"]="0.5";
+//     SetAnimProp("timeScale", animationStatusValues["currentSpeed"]);
+// 		SetSpeedHighlights(document.getElementById("animationSpeed-0.5"));
+// });
+// document.getElementById("animationSpeed-1.0").addEventListener("click", (event) => {
+//     animationStatusValues["currentSpeed"]="1.0";
+//     SetAnimProp("timeScale", animationStatusValues["currentSpeed"]);
+// 		SetSpeedHighlights(document.getElementById("animationSpeed-1.0"));
+// });
+// document.getElementById("animationSpeed-1.5").addEventListener("click", (event) => {
+//     animationStatusValues["currentSpeed"]="1.5";
+//     SetAnimProp("timeScale", animationStatusValues["currentSpeed"]);
+// 	SetSpeedHighlights(document.getElementById("animationSpeed-1.5"));
+// });
+// document.getElementById("animationSpeed-2.0").addEventListener("click", (event) => {
+//     animationStatusValues["currentSpeed"]="2.0";
+//     SetAnimProp("timeScale", animationStatusValues["currentSpeed"]);
+// 	SetSpeedHighlights(document.getElementById("animationSpeed-2.0"));
+// });
 
-    //console.log(model.orbitControls);
 
-    // Add hotspots
-    if (model.hotspots) {
-      model.hotspots.forEach(hotspot => {
-        const hs = document.createElement('a-sphere');
-        hs.setAttribute('radius', '0.025');
-        hs.setAttribute('color', '#4CC3D9');
-        hs.setAttribute('cursor-listener', '');
-        hs.setAttribute('class', 'clickable');
-        let hsAttr = `spatial-hotspot=\"isInteractable: true;`;
-        if (hotspot.position) hsAttr += ` position: ${hotspot.position.x} ${hotspot.position.y} ${hotspot.position.z};`;
-        if (hotspot.lookAt) hsAttr += ` lookAt: ${hotspot.lookAt.x} ${hotspot.lookAt.y} ${hotspot.lookAt.z};`;
-        if (hotspot.orbitAzimuth !== undefined) hsAttr += ` orbitAzimuth: ${hotspot.orbitAzimuth};`;
-        if (hotspot.orbitElevation !== undefined) hsAttr += ` orbitElevation: ${hotspot.orbitElevation};`;
-        if (hotspot.orbitDistance !== undefined) hsAttr += ` orbitDistance: ${hotspot.orbitDistance};`;
-        if (hotspot.label) hsAttr += ` label: '${hotspot.label}';`;
-        if (hotspot.title) hsAttr += ` title: '${hotspot.title}';`;
-        if (hotspot.duration) hsAttr += ` duration: ${hotspot.duration};`;
-        hsAttr += '\"';
-        hs.setAttribute('spatial-hotspot', hsAttr);
-        scene.appendChild(hs);
-        currentHotspots.push(hs);
-      });
+
+
+function SetAnimProp(prop, newValue) {
+    const entity = document.getElementById("3D-object");
+    let currentProps = entity.getAttribute("animation-mixer") || "";
+
+    // Ensure currentProps is a string
+    if (typeof currentProps !== "string") {
+        currentProps = String(currentProps);
     }
-  });
+
+    console.log("animation-mixer=" + currentProps);
+
+    // Convert current properties into an object
+    let propObj = Object.fromEntries(
+        currentProps.split(";").map(p => p.trim().split(":").map(s => s.trim()))
+    );
+
+    // Update the specified property
+    propObj[prop] = newValue;
+
+    // Convert back to attribute string
+    const updatedProps = Object.entries(propObj)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join("; ");
+
+    // Apply updated properties
+    entity.setAttribute("animation-mixer", updatedProps);  
+	// document.getElementById('animationStatus').innerHTML = "Changed:"+prop + ": " + newValue+"<BR>Status: "+JSON.stringify(entity.getAttribute("animation-mixer"), null, 2).replace(/\n/g, "<br>");
+	
 }
 
-document.addEventListener('DOMContentLoaded', loadModelConfig);
+
+
+
+
+// Note: Model loading is now handled by the model-loader-controller component
+// The loadModelConfig and loadModelByIndex functions have been moved to the component
+
+let version = '0.99.202506151415';
+window.addEventListener("load", (event) => {
+  
+  setTimeout(() => {
+    const intialLoadingScreen = document.getElementById('loading-screen');
+    if (intialLoadingScreen) {
+      window.fadeOutLoadingScreen(750);
+      const loadTimeMs = performance.now();
+        let loadTimeStr = `${Math.round(loadTimeMs)}ms`;
+        if (loadTimeMs > 2000) {
+          loadTimeStr += ` (${(loadTimeMs / 1000).toFixed(2)}s)`;
+        }
+        console.log(`[XRS] APP READY. Load time: ${loadTimeStr}`);
+    }
+  }, 750); 
+  
+});
+
+
+// Wait for both DOM and A-Frame to be ready
+document.addEventListener('DOMContentLoaded', () => {
+    console.log(`[XRS] APP INITIALISED... XRS v${version}`);
+    console.log("[XRS] Looking for scene VARS...");
+    const scene = document.querySelector('a-scene');
+    if (scene) {
+        console.log("[XRS] Scene found... ");
+        scene.addEventListener('loaded', () => {
+            initDebug();
+            // Add camera-utils to the scene
+            scene.setAttribute('camera-utils', ''); 
+            // Reset camera using the model-loader-controller
+            console.log("[XRS] Loading assets... ");
+            const modelLoader = scene.components['model-loader-controller','my-timer'];
+            if (modelLoader) {
+                console.log("[XRS] Assets found... ");
+                //modelLoader.resetCamera(90, 0, 0.1, 0.085);
+                // modelLoader.loadModelConfig(); // Removed duplicate call
+            }
+        });
+    }
+});
+
 </script>
 

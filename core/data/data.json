@@ -8,7 +8,7 @@
       "orbitControls": {
         "InitialPolarAngle": 45,
         "InitialAzimuthAngle": 0,
-        "ZoomMaxDistance": 0.5,
+        "ZoomMaxDistance":0.5,
         "InitialZoomAmmount": 0.5
       },
       "hotspots": []
@@ -49,6 +49,123 @@
         "InitialAzimuthAngle": 0,
         "ZoomMaxDistance": 0.085,
         "InitialZoomAmmount": 0.085
+      },
+      "hotspots": []
+    },
+	{
+      "id": "triceraptops",
+      "filename": "animated_triceratops_skeleton.glb",
+      "modelPosition": { "x": 0, "y": 0, "z": 0 },
+      "modelRotation": { "x": 0, "y": 0, "z": 0 },
+      "orbitControls": {
+        "InitialPolarAngle": 90,
+        "InitialAzimuthAngle": 0,
+        "ZoomMaxDistance":5.5,
+        "InitialZoomAmmount": 5.5
+      },
+      "hotspots": []
+    },
+    {
+      "id": "cloud_station",
+      "filename": "cloud_station.glb",
+      "modelPosition": { "x": 0, "y": 0, "z": 0 },
+      "modelRotation": { "x": 0, "y": 0, "z": 0 },
+      "orbitControls": {
+        "InitialPolarAngle": 90,
+        "InitialAzimuthAngle": 0,
+        "ZoomMaxDistance": 10.085,
+        "InitialZoomAmmount": 10.085
+      },
+      "hotspots": []
+    },
+    {
+      "id": "free_cyberpunk_hovercar",
+      "filename": "free_cyberpunk_hovercar.glb",
+      "modelPosition": { "x": 0, "y": 0, "z": 0 },
+      "modelRotation": { "x": 0, "y": 0, "z": 0 },
+      "orbitControls": {
+        "InitialPolarAngle": 45,
+        "InitialAzimuthAngle": 0,
+        "ZoomMaxDistance": 5.085,
+        "InitialZoomAmmount": 5.085
+      },
+      "hotspots": []
+    },    
+    {
+      "id": "masterchief",
+      "filename": "masterchief.glb",
+      "modelPosition": { "x": 0, "y": 0, "z": 0 },
+      "modelRotation": { "x": 0, "y": 0, "z": 0 },
+      "orbitControls": {
+        "InitialPolarAngle": 90,
+        "InitialAzimuthAngle": 0,
+        "ZoomMaxDistance": 5.085,
+        "InitialZoomAmmount": 5.085
+      },
+      "hotspots": []
+    },    
+    {
+      "id": "technical_difficulties",
+      "filename": "technical_difficulties.glb",
+      "modelPosition": { "x": 0, "y": 0, "z": 0 },
+      "modelRotation": { "x": 0, "y": 0, "z": 0 },
+      "orbitControls": {
+        "InitialPolarAngle": 90,
+        "InitialAzimuthAngle": 0,
+        "ZoomMaxDistance": 15.085,
+        "InitialZoomAmmount": 15.085
+      },
+      "hotspots": []
+    },
+    {
+      "id": "frog",
+      "filename": "frog.glb",
+      "modelPosition": { "x": 0, "y": 0, "z": 0 },
+      "modelRotation": { "x": 0, "y": 0, "z": 0 },
+      "orbitControls": {
+        "InitialPolarAngle": 45,
+        "InitialAzimuthAngle": 0,
+        "ZoomMaxDistance": 5.085,
+        "InitialZoomAmmount": 5.085
+      },
+      "hotspots": []
+    },    
+    {
+      "id": "oxxo",
+      "filename": "oxxo.glb",
+      "modelPosition": { "x": 0, "y": 0, "z": 0 },
+      "modelRotation": { "x": 0, "y": 0, "z": 0 },
+      "orbitControls": {
+        "InitialPolarAngle": 90,
+        "InitialAzimuthAngle": 0,
+        "ZoomMaxDistance": 5.085,
+        "InitialZoomAmmount": 5.085
+      },
+      "hotspots": []
+    },    
+    {
+      "id": "kitchen",
+      "filename": "kitchen.glb",
+      "modelPosition": { "x": 0, "y": -1.6, "z": 0 },
+      "modelRotation": { "x": 0, "y": 0, "z": 0 },
+      "orbitControls": {
+        "InitialPolarAngle": 90,
+        "InitialAzimuthAngle": 0,
+        "ZoomMaxDistance": 5.085,
+        "InitialZoomAmmount": 5.085
+      },
+      "hotspots": []
+    },    
+    {
+      "id": "greenhouse",
+      "filename": "greenhouse/scene.gltf",
+      "modelPosition": { "x": 0, "y": -1.6, "z": 0 },
+      "modelRotation": { "x": 0, "y": 0, "z": 0 },
+      "orbitControls": {
+        "InitialPolarAngle": 90,
+        "InitialAzimuthAngle": 0,
+        "ZoomMaxDistance": 5.085,
+        "InitialZoomAmmount": 5.085
       },
       "hotspots": []
     }

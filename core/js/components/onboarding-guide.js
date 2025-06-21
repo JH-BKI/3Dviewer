@@ -26,6 +26,23 @@ function waitForClassAndFocus(btn, className, maxTries = 10, delay = 10) {
     tryFocus();
 }
 
+AFRAME.registerComponent("update-time", {
+  init: function () {
+    this.infoElement = document.querySelector("#animation-info"); // Cache reference
+	this.mixer = this.el.components["animation-mixer"];
+  },
+
+  tick: function () {
+    
+    if (this.mixer && this.mixer.activeAction) {
+      var time = this.mixer.activeAction.time.toFixed(2);
+      var duration = this.mixer.activeAction._clip.duration.toFixed(2);
+	console.log(`Time: ${time}s / of: ${duration}s`);
+      this.infoElement.innerText = `Time: ${time}s / of: ${duration}s`;
+    }
+  }
+});
+
 AFRAME.registerComponent('onboarding-guide', {
     schema: {
         // Camera movement settings

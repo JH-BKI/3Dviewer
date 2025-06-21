@@ -1,0 +1,95 @@
+/* "type": "3D_MODEL", "360_IMAGE", "360_VIDEO", "BESPOKE" */
+/* "presentation": ["browser", "vr", "ar"] */
+/* "controlScheme": "orbit", look */
+
+{
+  "global": {
+    "id": 0,
+    "title": "Transport Individuals",
+    "name": "Transport Individuals 360 Immersive Activity",
+    "splashImage": "./assets/splash-1080.jpg",
+    "headerContent": "Transport Individuals",
+    "descriptionContent": "<p>Complete the following activity on procedures for transporting a client.</p><p>This activity utilises 360 media. You can click/drag or touch/swipe to look around and interact with hotspots that reveal extra information, questions or media. Use this activity to explore spaces or processes as if you were there in person.</p><p>For an enhanced immersive experience, open this activity on a VR headset to explore in Virtual Reality.</p>",
+    "footerContent": "<p>Select 'Begin' to start the experience.</p>",
+    "themeColour": "#5992ca",
+    "themePrimaryColour": "#5992ca",
+    "themeSecondaryColour": "#5992ca"
+  },
+  "experience": {
+    "scenes": [
+      {
+        "id": 0,
+        "type": "3D_MODEL",
+        "presentation": ["browser", "vr", "ar"],
+        "controlScheme": "orbit",
+        "config": 
+        {        
+          "name": "3D Model Test",
+          "image ": "./assets/images/",
+          "description": "<h4>3D Model Test</h4><p>A simple animated model that show information hotspot, a quiz and an exploding view of the components.</p>",
+          "models": [
+            {
+              "id": "0",
+              "background": "./assets/images/background-01.jpg",
+              "name": "Triceratops",
+              "description": "A simple animated model of a Triceratops.",
+              "filename": "./assets/3d/animated_triceratops_skeleton.glb",
+              "modelPosition": { "x": 0, "y": 0, "z": 0 },
+              "modelRotation": { "x": 0, "y": 0, "z": 0 },
+              "orbitControls": {
+                "InitialPolarAngle": 90,
+                "InitialAzimuthAngle": 0,
+                "ZoomMaxDistance":5.5,
+                "InitialZoomAmmount": 5.5
+              },
+              "hotspots": [
+                {
+                  "id": 0,
+                  "type": "image",
+                  "label": "Dino",
+                  "position": "5.05 0.02 -2.07",
+                  "specific": {
+                    "targetSrc": "./assets/scene-01/scene-01-hotspot-01.jpg",
+                    "targetDesc": "Haile has a physio appointment on the ground floor at 10am and must be transported there.",
+                  }
+                }
+              ]
+            },
+            {
+              "id": "1",
+              "background": "./assets/images/background-02.jpg",
+              "name": "Trimmer",
+              "description": "A simple animated model of a Hedge Trimmer.",
+              "filename": "./assets/3d/frog.glb",
+              "modelPosition": { "x": 0, "y": 0, "z": 0 },
+              "modelRotation": { "x": 0, "y": 0, "z": 0 },
+              "orbitControls": {
+                "InitialPolarAngle": 90,
+                "InitialAzimuthAngle": 0,
+                "ZoomMaxDistance":5.5,
+                "InitialZoomAmmount": 5.5
+              },
+              "hotspots": [
+                {
+                  "id": 0,
+                  "type": "image",
+                  "label": "Client",
+                  "position": "5.05 0.02 -2.07",
+                  "useRotation": false,
+                  "rotation": "0 0 0",
+                  "visited": false,
+                  "specific": {
+                    "targetSrc": "./assets/scene-01/scene-01-hotspot-01.jpg",
+                    "targetDesc": "Haile has a physio appointment on the ground floor at 10am and must be transported there.",
+                    "triggerHotspot": false,
+                    "triggerSrc": 0
+                  }
+                }
+              ]
+            }            
+          ]          
+        }
+      }
+    ]
+  } 
+}
