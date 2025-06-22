@@ -123,14 +123,18 @@ AFRAME.registerComponent('button-toggle', {
     } = config;
 
     const tooltipAttr = tooltip ? `data-balloon="${tooltip}" data-balloon-pos="${tooltipPosition}"` : '';
-    const labelHTML = showLabel ? `<span class="label">${this.data.isToggled ? labelOn : labelOff}</span>` : '';
+    const labelHTML = showLabel ? `<span class="content-label">${this.data.isToggled ? labelOn : labelOff}</span>` : '';
     
+    const iconOnlyClass = !showLabel ? 'icon-only' : '';
+
     return `
-      <button class="button" ${tooltipAttr} data-selection="${this.data.isToggled ? valueOn : valueOff}">
-        <span class="icon">
-          <i class="${this.data.isToggled ? iconOn : iconOff}"></i>
+      <button class="button ${iconOnlyClass}" ${tooltipAttr} data-selection="${this.data.isToggled ? valueOn : valueOff}">
+        <span class="label">
+          <span class="icon">
+            <i class="${this.data.isToggled ? iconOn : iconOff}"></i>
+            ${labelHTML}
+          </span>
         </span>
-        ${labelHTML}
       </button>
     `;
   },
@@ -138,7 +142,7 @@ AFRAME.registerComponent('button-toggle', {
   setToggleState: function (button, isToggled) {
     const config = JSON.parse(this.data.config);
     const icon = button.querySelector('i');
-    const label = button.querySelector('.label');
+    const label = button.querySelector('.content-label');
     
     // Update the persistent state
     this.data.isToggled = isToggled;

@@ -11,6 +11,7 @@
     <script src="./core/js/pkg/globalUtils.js"></script>
     <script src="./core/js/pkg/aframe.min.js"></script> <!-- https://aframe.io/releases/1.7.0/aframe.min.js -->
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.5.4/dist/aframe-extras.min.js"></script>
+    <script src="https://unpkg.com/aframe-environment-component@1.5.x/dist/aframe-environment-component.min.js"></script>
     <script src="./core/js/pkg/aframe-orbit-controls.min.js"></script> <!-- https://unpkg.com/aframe-orbit-controls@1.3.2/dist/aframe-orbit-controls.min.js -->
     <script src="./core/js/debug.js"></script>
     <script src="./core/js/components/camera-utils.js"></script>
@@ -21,13 +22,18 @@
     
     <!-- UI components -->
     <script src="./core/js/components/ui/button-dropmenu.js"></script>
+    <script src="./core/js/components/ui/button-simple.js"></script>
     <script src="./core/js/components/ui/button-toggle.js"></script>
+    <script src="./core/js/components/ui/modal-dialog.js"></script>
+    <script src="./core/js/components/spatial-hotspot.js"></script>
+    <script src="./core/js/components/billboard.js"></script>
 
     <!-- controllers -->
     <script src="./core/js/components/controllers/device-presentation-controller.js"></script>
     <script src="./core/js/components/controllers/model-loader-controller.js"></script>
     <script src="./core/js/components/controllers/model-animation-controller.js"></script>
-
+    <script src="./core/js/components/controllers/model-camera-controller.js"></script>
+    <script src="./core/js/components/controllers/spatial-hotspot-controller.js"></script>
 
     <link href="https://cdn.jsdelivr.net/npm/modern-normalize@3.0.1/modern-normalize.min.css" rel="stylesheet">
     <!-- <link rel="stylesheet" href="./core/css/pkg/bulma.min.css">
@@ -244,6 +250,7 @@
       zoom-ui
       loading-screen="dotsColor: white; backgroundColor: black"
       model-loader-controller
+      spatial-hotspot-controller
 	  >
 
       <a-entity ui-overlay></a-entity>
@@ -254,9 +261,9 @@
 
         <!-- Move sky before other elements to ensure it loads first -->
         <a-sky src="#sceneBg" rotation="0 0 0"></a-sky>
-
+        <!-- <a-entity environment="preset: tron; active: true; seed: 0; skyType: gradient; skyColor: #091b39; horizonColor: #284a9e; lightPosition: [object Object]; fog: 0.8; ground: spikes; groundYScale: 4.91; groundColor: #061123; dressing: towers; dressingAmount: 5; dressingColor: #fb000e; dressingScale: 0; dressingVariance: [object Object]; grid: 1x1; gridColor: #fb000e; shadowSize: 0"></a-entity> -->
    
-
+        
           <a-light type="ambient" color="#ffffff" intensity="0.65"></a-light>
           <a-light type="directional" color="#fff" intensity="1" position="3.3 4 1.5"></a-light>
           <a-light type="directional" color="#fff" intensity="1" position="-3.3 4 -1.5"></a-light>
@@ -292,9 +299,18 @@
         <div class="xrs_uicontainer">
           <nav class="xrs_navbar" role="navigation" aria-label="dropdown navigation">
               
-            <div class="start"></div>
+            <div class="start">
+            </div>
 
-            <div class="end"></div>       
+            <div class="end">
+              <div class="nav-item">
+                <a-entity model-camera-controller="method: html; uiClass: browser-model-camera-controls; targetEntity: camera"></a-entity>
+              </div>
+
+              <div class="nav-item">
+                <a-entity device-presentation-controller="method: html; uiClass: browser-device-presentation-controls; targetEntity: [body,scene]"></a-entity>
+              </div>
+            </div>       
               
           </nav>
         </div>

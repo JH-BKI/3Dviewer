@@ -100,10 +100,12 @@ AFRAME.registerComponent('model-loader-controller', {
 
     // Wait for model to load before updating camera/controls
     entity.addEventListener('model-loaded', (e) => {
+      e.stopPropagation();
       console.log('Model loaded successfully');
       
       // Dispatch global model-loaded event
-      const modelLoadedEvent = new CustomEvent('model-loaded', { detail: { entity: entity } });
+      const modelLoadedEvent = new CustomEvent('model-loaded', { detail: { entity: entity, modelId: model.id } });
+      console.log('[HOTSPOT_DEBUG] [model-loader-controller] loadModelByIndex(): Dispatching model-loaded event.', modelLoadedEvent.detail);
       window.dispatchEvent(modelLoadedEvent);
       
       // Reset camera using camera-utils

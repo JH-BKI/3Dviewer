@@ -41,9 +41,11 @@ html{
     --xrs-button-background-color-hover: rgba(28, 105, 212, 0.65);
     --xrs-button-background-color-active: rgba(28, 105, 212, 0.90);
 
+    --xrs-modal-background-color: linear-gradient(0deg, rgba(16,0,12,0.95), rgba(15,1,22,0.95), rgba(11,4,31,0.95), rgba(4,9,37,0.95));
+    
     /* to configure */
-    --xrs-control-radius: 0.25rem;
-    --xrs-control-border-width: 0.1rem;
+    --xrs-control-radius: 0.2rem;
+    --xrs-control-border-width: 1px;
 
     --xrs-control-size: 1rem;
     --xrs-control-height: 2rem;
@@ -113,7 +115,24 @@ button, .button, select, textarea, input {
         background-color: var(--xrs-button-background-color-active);
         color: var(--xrs-button-color-active);
     }
+    
 
+
+    &.icon-only .icon {
+        margin-left: 0.25rem;
+    }
+
+    &.icon-only .label >.icon >.fa-pause, &.icon-only .label >.icon >.fa-play {
+        margin-left: 0.25rem;
+    }
+    
+    &.icon-only .label >.icon >.fa-vr-cardboard {
+        margin-left: -0.15rem;
+    }
+
+    &.icon-only .label >.icon >.fa-compress, &.icon-only .label >.icon >.fa-expand {
+        margin-left: 0.075rem;
+    }
 
 
     /* drop-down start ========================================================================== */
@@ -199,6 +218,9 @@ button, .button, select, textarea, input {
         max-height: 13rem;
     }
 
+
+
+
     /* drop-down end ========================================================================== */
 
 }
@@ -244,9 +266,10 @@ button, .button, select, textarea, input {
         white-space: nowrap;         /* Prevents wrapping */
         overflow: hidden;            /* Hides overflowing text */
         text-overflow: ellipsis;
+        padding-right: 0.5rem;
     }
 
-    & .selection-label {
+    & .label {
         font-weight: 500;
     }
 }
@@ -295,33 +318,35 @@ button, .button, select, textarea, input {
     z-index: 2;
     pointer-events: none;
     cursor: pointer;
-
     display: flex;
     align-items: center;
     justify-content: space-between;
-
     position: fixed;
     bottom: 0;
-
     width: 100%;
     height: 5rem;
     padding: var(--xrs-padding-double);
-    
-
-
-    /* border-top: 0px solid rgba(255, 255, 255, 0.35); */
     background: transparent;
-
 
     & .start, & .end {
         display: flex;
         align-items: center;
-        gap: 2rem;
+        flex-direction: row;
+        gap: 4rem;
         pointer-events: all;
     }
-    
 
-    & .nav-item {
+    & .start {
+        justify-content: flex-start;
+        flex-grow: 1;
+    }
+
+    & .end {
+        justify-content: flex-end;
+        flex-grow: 0;
+    }
+
+    & .nav-item > *{
         display: flex;
         align-items: center;
         justify-content: space-evenly;
@@ -334,16 +359,244 @@ button, .button, select, textarea, input {
     content: "";
     position: absolute;
     inset: 0;
+    z-index: -1;
     background: var(--xrs-navbar-background-color-gradient);
     opacity: 0;
-    transition: opacity 1s ease 1s;
-    z-index: -1; /* ensure it's behind the content */
-    pointer-events: none;
-  }
-  
-  .xrs_navbar:hover::before {
+    transition: opacity 1s ease-in-out;
+}
+
+.xrs_navbar:hover::before {
     opacity: 1;
     transition: opacity 0.5s ease;
+}
+
+
+
+@media (max-width: 700px) {
+        
+    .button.dropmenu, .button.button-toggle, .button.simple.icon-only  {
+        /* … */
+        width: 3.2rem !important;
+        min-width: 3.2rem !important;
+        max-width: 3.2rem !important;
+        height: 3.2rem !important;
+        min-height: 3.2rem !important;
+        max-height: 3.2rem !important;
+    
+    
+        & > .label > .icon {
+            margin-left: 0.3rem;
+        
+        
+            & > .content-label {
+                display: none;
+            }
+        }
+
+    }
+
+    .xrs_navbar {
+
+        & .start, & .end {
+            gap: 2rem;
+        }
+
+    }
+
+    .animation-timer-display{
+        display: none !important;
+    }
+
+}   
+
+a-entity[device-presentation-controller] {
+    flex-direction: row;
+    gap: 1rem;
+}
+
+
+.responsive-media {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+  }
+  
+  .responsive-media iframe,
+  .responsive-media img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: 0;
+  }
+  
+  /* Aspect ratio modifiers */
+  .ratio-16-9 {
+    aspect-ratio: 16 / 9;
+  }
+  
+  .ratio-4-3 {
+    aspect-ratio: 4 / 3;
+  }
+
+  a-assets, a-scene video, a-scene img, a-scene audio {
+    display: block;
   }
 
 
+/* Modal Dialog Styles
+========================================================================== */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--xrs-black-75percent);
+    z-index: 9998;
+}
+
+.modal-dialog-container {
+    position: fixed;
+    top: 50%;
+    left: 1rem; /* Position to the left of the viewport */
+    transform: translate(0, -50%); /* Vertically center */
+    max-width: 45%;
+    max-height: 600px;
+    width: 100%;
+    background: var(--xrs-background-color-gradient);
+    border: 1px solid var(--xrs-black-25percent);
+    border-radius: var(--xrs-control-radius);
+    box-shadow: 0 5px 15px var(--xrs-black-50percent);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    color: var(--xrs-text-color);
+    text-shadow: var(--xrs-text-shadow);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    background: var(--xrs-modal-background-color);
+}
+
+a-entity[modal-dialog][visible="false"] .modal-dialog-container {
+    opacity: 0;
+    transform: translate(0, -45%); /* Animate upwards on close */
+    pointer-events: none;
+}
+
+a-entity[modal-dialog][visible="true"] .modal-dialog-container {
+    opacity: 1;
+    transform: translate(0, -50%); /* Settle in center */
+}
+
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--xrs-padding-double);
+    border-bottom: 1px solid var(--xrs-black-25percent);
+}
+
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: var(--xrs-padding-default);
+}
+
+.modal-close-x {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--xrs-text-color);
+    cursor: pointer;
+    padding: 0 var(--xrs-padding-default);
+}
+
+.modal-close-x:hover {
+    color: var(--xrs-button-color-hover);
+}
+
+.modal-content {
+    padding: var(--xrs-padding-double);
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex-grow: 1; /* Allows content to take up available space */
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: var(--xrs-padding-double);
+    border-top: 1px solid var(--xrs-black-25percent);
+    gap: var(--xrs-padding-default);
+}
+
+.modal-footer button {
+    background-color: var(--xrs-button-background-color);
+    color: var(--xrs-button-color);
+}
+
+.modal-footer button:hover {
+    background-color: var(--xrs-button-background-color-hover);
+}
+
+
+@media (max-width: 720px) {
+        
+    .button.dropmenu, .button.button-toggle, .button.simple.icon-only  {
+        /* … */
+        width: 3.2rem !important;
+        min-width: 3.2rem !important;
+        max-width: 3.2rem !important;
+        height: 3.2rem !important;
+        min-height: 3.2rem !important;
+        max-height: 3.2rem !important;
+    
+    
+        & > .label > .icon {
+            margin-left: 0.3rem;
+        
+        
+            & > .content-label {
+                display: none;
+            }
+        }
+
+    }
+
+    .xrs_navbar {
+
+        & .start, & .end {
+            gap: 2rem;
+        }
+
+    }
+
+    .animation-timer-display{
+        display: none !important;
+    }
+
+    .modal-dialog-container {
+        max-width: 100%;
+        min-width: 100%;
+        width: 100vw;
+        margin: 0;
+        left: 0;
+        height: 50vh;
+        transform: translate(0, -10%);
+        bottom: 0;
+        min-height: 56vh;
+    }
+
+}   
+
+
+@media (max-width: 480px) {
+        
+
+}   

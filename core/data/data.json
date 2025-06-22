@@ -52,7 +52,7 @@
       },
       "hotspots": []
     },
-	{
+	  {
       "id": "triceraptops",
       "filename": "animated_triceratops_skeleton.glb",
       "modelPosition": { "x": 0, "y": 0, "z": 0 },
@@ -63,7 +63,32 @@
         "ZoomMaxDistance":5.5,
         "InitialZoomAmmount": 5.5
       },
-      "hotspots": []
+      "hotspots": [
+        {
+          "id": 0,
+          "type": "media",
+          "label": "Skull",
+          "position": "2.0 0.5 2.0",
+          "visited": false,
+          "requireAnswer": false,
+          "details": {                    
+            "targetTitle": "Tricertops Skull",
+            "targetDesc": "<div class=\"responsive-media ratio-16-9\"><iframe width=\"560\" height=\"315\" src=\"https://www.youtube.com/embed/YKzRPFvky9Y?si=W4hK6rEOe-nYiyvm\" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" referrerpolicy=\"strict-origin-when-cross-origin\" allowfullscreen></iframe></div><p>The skull of the Triceratops.</p>"
+          }
+        },
+        {
+          "id": 1,
+          "type": "quiz",
+          "label": "Ribs",
+          "position": "1.0 1.0 -2.0",
+          "visited": false,
+          "requireAnswer": true,
+          "details": {
+            "targetTitle": "Tricertops Ribs",
+            "targetDesc": "<div class=\"responsive-media ratio-16-9\"><img src='./assets/images/hotspot-01.jpg' alt='Triceratops Ribs' /></div><p>The ribs of the Triceratops.</p><p>The ribs of the Triceratops.</p><p>The ribs of the Triceratops. - The ribs of the Triceratops.</p>"
+          }
+        }      
+      ]
     },
     {
       "id": "cloud_station",

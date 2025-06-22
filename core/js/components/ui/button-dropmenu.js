@@ -98,7 +98,7 @@ AFRAME.registerComponent('button-dropmenu', {
         const optionHTML = `
           <span class="icon">
             <i class="${targetOption.icon}"${targetOption.style ? ` style="${targetOption.style}"` : ''}></i>
-            <span>${targetOption.text}</span>
+            <span class="content-label-updateSelectedOption">${targetOption.text}</span>
           </span>
         `;
         label.innerHTML = optionHTML;
@@ -233,15 +233,15 @@ AFRAME.registerComponent('button-dropmenu', {
       }
     } else {
       // Fallback to defaultLabel with icon
-      initialLabelHTML = `<span class="icon"><i class="${buttonIcon}"></i><span>${defaultLabel}</span></span>`;
+      initialLabelHTML = `<span class="icon"><i class="${buttonIcon}"></i><span class="content-label-buildDropmenuHTML2">${defaultLabel}</span></span>`;
     }
 
     return `
       <button class="button dropmenu" data-dropmenu="${buttonClass}">
-        <span class="label"><span class="selection-label">${initialLabelHTML}</span></span>
+        <span class="label">${initialLabelHTML}</span>
         <div class="dropmenu-menu ui-panel">
           <span class="dropmenu-title">
-            <i class="${titleIcon}"></i><br><span>${title}</span>
+            <i class="${titleIcon}"></i><br><span class="content-label-buildDropmenuHTML3">${title}</span>
           </span>
           ${optionsHTML}
         </div>
@@ -251,7 +251,7 @@ AFRAME.registerComponent('button-dropmenu', {
 
   addEventListeners: function (wrapper, config) {
     const button = wrapper.querySelector('button');
-    const label = button.querySelector('.selection-label');
+    const label = button.querySelector('.label');
     const items = button.querySelectorAll('.dropmenu-item');
 
     // Open/close dropmenu

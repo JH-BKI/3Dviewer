@@ -1,10 +1,3 @@
-AFRAME.registerComponent('my-timer', {
-  tick: function () {
-    console.log('Tick is firing');
-  }
-});
-
-
 AFRAME.registerComponent('model-animation-controller', {
   schema: {
     method: { type: 'string', default: 'html', oneOf: ['html', 'spatial'] },

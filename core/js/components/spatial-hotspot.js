@@ -4,239 +4,65 @@
  */
 AFRAME.registerComponent('spatial-hotspot', {
     schema: {
-        isInteractable: { type: 'boolean', default: true },
-        goToPosition: { type: 'vec3', default: { x: 0, y: 0, z: 0 } },
-        lookAt: { type: 'vec3', default: { x: 0, y: 0, z: 0 } },
-        cameraOffset: { type: 'vec3', default: { x: 0, y: 0, z: 0 } },
-        duration: { type: 'number', default: 1000 },
-        isTrigger: { type: 'boolean', default: false },
-        triggeredElement: { type: 'selector', default: null },
-        title: { type: 'string', default: '' },
-        titleOffset: { type: 'vec3', default: { x: 0, y: 0.2, z: 0 } },
-        label: { type: 'string', default: '' },
-        labelOffset: { type: 'vec3', default: { x: 0, y: 0.1, z: 0 } },
-        drawLine: { type: 'boolean', default: false },
-        lineStyle: {
-            type: 'string',
-            default: 'color: #FF0033; style: solid; opacity: 0.5; width: 2'
-        },
-        orbitAzimuth: { type: 'number', default: null },
-        orbitElevation: { type: 'number', default: null },
-        orbitDistance: { type: 'number', default: null }
+        hotspotID: {type: 'string'},
+        label: {type: 'string'},
+        type: {type: 'string', default: 'media'},
+        visited: {type: 'boolean', default: false},
+        required: {type: 'boolean', default: false}
     },
 
     init: function() {
-        // State tracking
-        this.isHovered = false;
-        this.isActivated = false;
-        this.originalScale = new THREE.Vector3(1, 1, 1);
-        
-        // Create text elements for title and label
-        this.createTextElements();
-        
-        // Create line if needed
-        if (this.data.drawLine) {
-            this.createLine();
-        }
+        console.log('[HOTSPOT_DEBUG] [spatial-hotspot] init(): Creating hotspot with data:', this.data);
+        // Main hotspot body (the sphere)
+        this.hotspotEl = document.createElement('a-sphere');
+        this.hotspotEl.setAttribute('radius', 0.1);
+        this.hotspotEl.setAttribute('color', '#FF0000'); // Placeholder color
+        this.hotspotEl.setAttribute('shader', 'flat');
+        this.hotspotEl.setAttribute('billboard', ''); // Add billboard component
+        this.hotspotEl.setAttribute('cursor-listener', ''); // Make this element interactable by the raycaster
+        this.el.appendChild(this.hotspotEl);
 
-        // Set up event listeners
-        this.setupEventListeners();
-
-        // Start normal state animation
-        this.startNormalStateAnimation();
-    },
-
-    createTextElements: function() {
-        // Create title text
-        if (this.data.title) {
-            this.titleEl = document.createElement('a-entity');
-            this.titleEl.setAttribute('text', {
-                value: this.data.title,
-                align: 'center',
-                color: '#FFFFFF',
-                width: 2
-            });
-            this.titleEl.setAttribute('position', this.data.titleOffset);
-            this.el.appendChild(this.titleEl);
-        }
-
-        // Create label text
-        if (this.data.label) {
-            this.labelEl = document.createElement('a-entity');
-            this.labelEl.setAttribute('text', {
-                value: this.data.label,
-                align: 'center',
-                color: '#FFFFFF',
-                width: 2
-            });
-            this.labelEl.setAttribute('position', this.data.labelOffset);
-            this.labelEl.setAttribute('visible', false);
-            this.el.appendChild(this.labelEl);
-        }
-    },
-
-    createLine: function() {
-        this.lineEl = document.createElement('a-entity');
-        
-        // Parse the line style string into an object
-        const styleProps = this.data.lineStyle.split(';').reduce((acc, prop) => {
-            const [key, value] = prop.split(':').map(s => s.trim());
-            if (key && value) {
-                acc[key] = value;
-            }
-            return acc;
-        }, {});
-        
-        // Create line geometry
-        const material = new THREE.LineBasicMaterial({
-            color: new THREE.Color(styleProps.color || '#FF0033'),
-            opacity: parseFloat(styleProps.opacity || 0.5),
-            transparent: true
+        // Text label
+        this.labelEl = document.createElement('a-entity');
+        this.labelEl.setAttribute('text', {
+            value: this.data.label,
+            align: 'center',
+            width: 2,
+            color: '#FFFFFF'
         });
+        this.labelEl.setAttribute('position', '0 0.2 0');
+        this.labelEl.setAttribute('billboard', ''); // Add billboard component
+        this.el.appendChild(this.labelEl);
 
-        const points = [
-            new THREE.Vector3(0, 0, 0),
-            new THREE.Vector3(
-                this.data.goToPosition.x,
-                this.data.goToPosition.y,
-                this.data.goToPosition.z
-            )
-        ];
-
-        const geometry = new THREE.BufferGeometry().setFromPoints(points);
-        const line = new THREE.Line(geometry, material);
-        
-        this.lineEl.setObject3D('line', line);
-        this.el.appendChild(this.lineEl);
+        // Event Listeners for interaction
+        this.hotspotEl.addEventListener('mouseenter', this.onMouseEnter.bind(this));
+        this.hotspotEl.addEventListener('mouseleave', this.onMouseLeave.bind(this));
+        this.hotspotEl.addEventListener('mousedown', this.onMouseDown.bind(this));
+        this.hotspotEl.addEventListener('mouseup', this.onMouseUp.bind(this));
+        this.hotspotEl.addEventListener('click', this.onClick.bind(this));
     },
 
-    setupEventListeners: function() {
-        // Mouse/Touch events
-        this.el.addEventListener('mouseenter', this.onHoverStart.bind(this));
-        this.el.addEventListener('mouseleave', this.onHoverEnd.bind(this));
-        this.el.addEventListener('click', this.onActivate.bind(this));
-
-        // VR events
-        this.el.addEventListener('raycaster-intersected', this.onHoverStart.bind(this));
-        this.el.addEventListener('raycaster-intersected-cleared', this.onHoverEnd.bind(this));
-        this.el.addEventListener('triggerdown', this.onActivate.bind(this));
-
-        // External trigger event
-        this.el.addEventListener('hotspot-trigger', this.onActivate.bind(this));
+    onMouseEnter: function() {
+        this.hotspotEl.setAttribute('scale', '1.2 1.2 1.2'); // Grow on hover
     },
 
-    startNormalStateAnimation: function() {
-        if (!this.isHovered && !this.isActivated) {
-            this.el.setAttribute('animation__pulse', {
-                property: 'scale',
-                from: '1 1 1',
-                to: '1.1 1.1 1.1',
-                dir: 'alternate',
-                dur: 1000,
-                loop: true,
-                easing: 'easeInOutSine'
-            });
-        }
+    onMouseLeave: function() {
+        this.hotspotEl.setAttribute('scale', '1 1 1'); // Return to normal size
+        this.hotspotEl.setAttribute('color', '#FF0000'); // Return to normal color
     },
 
-    onHoverStart: function() {
-        if (!this.data.isInteractable) return;
-        
-        this.isHovered = true;
-        this.el.removeAttribute('animation__pulse');
-        
-        this.el.setAttribute('animation__hover', {
-            property: 'scale',
-            to: '1.1 1.1 1.1',
-            dur: 250,
-            easing: 'easeOutQuad'
-        });
-
-        if (this.labelEl) {
-            this.labelEl.setAttribute('visible', true);
-        }
+    onMouseDown: function() {
+        this.hotspotEl.setAttribute('color', '#00FF00'); // Active color
     },
 
-    onHoverEnd: function() {
-        if (!this.data.isInteractable) return;
-        
-        this.isHovered = false;
-        this.el.removeAttribute('animation__hover');
-        
-        if (!this.isActivated) {
-            this.startNormalStateAnimation();
-        }
-
-        if (this.labelEl) {
-            this.labelEl.setAttribute('visible', false);
-        }
+    onMouseUp: function() {
+        this.hotspotEl.setAttribute('color', '#FF0000'); // Normal color
     },
 
-    onActivate: function() {
-        if (!this.data.isInteractable) return;
-        
-        this.isActivated = true;
-        this.el.removeAttribute('animation__hover');
-        this.el.removeAttribute('animation__pulse');
-
-        // Activate animation
-        this.el.setAttribute('animation__activate', {
-            property: 'scale',
-            to: '1.3 1.3 1.3',
-            dur: 250,
-            easing: 'easeOutQuad'
-        });
-
-        // Move camera
-        this.animateCamera();
-
-        // Trigger UI element if specified
-        if (this.data.isTrigger && this.data.triggeredElement) {
-            setTimeout(() => {
-                this.data.triggeredElement.emit('hotspot-triggered');
-            }, this.data.duration);
-        }
-
-        // Reset state after animation
-        setTimeout(() => {
-            this.isActivated = false;
-            if (this.isHovered) {
-                this.onHoverStart();
-            } else {
-                this.startNormalStateAnimation();
-            }
-        }, 500);
-    },
-
-    animateCamera: function() {
-        let goTo = this.data.goToPosition;
-        if (
-            this.data.orbitAzimuth !== null &&
-            this.data.orbitElevation !== null &&
-            this.data.orbitDistance !== null
-        ) {
-            const azimuthRad = THREE.MathUtils.degToRad(this.data.orbitAzimuth);
-            const elevationRad = THREE.MathUtils.degToRad(this.data.orbitElevation);
-            const d = this.data.orbitDistance;
-            const target = this.data.lookAt;
-            goTo = {
-                x: target.x + d * Math.sin(elevationRad) * Math.sin(azimuthRad),
-                y: target.y + d * Math.cos(elevationRad),
-                z: target.z + d * Math.sin(elevationRad) * Math.cos(azimuthRad)
-            };
-        }
-        if (window.cameraUtils && typeof window.cameraUtils.animateCameraToTarget === 'function') {
-            window.cameraUtils.animateCameraToTarget(
-                goTo,
-                this.data.cameraOffset,
-                this.data.lookAt,
-                this.data.duration
-            );
-        }
-    },
-
-    // Public method to trigger the hotspot programmatically
-    trigger: function() {
-        this.onActivate();
+    onClick: function() {
+        console.log(`[HOTSPOT_DEBUG] [spatial-hotspot] onClick(): Clicked. Emitting event for hotspot ID: ${this.data.hotspotID}`);
+        window.dispatchEvent(new CustomEvent('hotspot-clicked', {
+            detail: { hotspotID: this.data.hotspotID }
+        }));
     }
 }); 
