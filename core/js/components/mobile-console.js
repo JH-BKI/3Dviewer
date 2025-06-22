@@ -41,7 +41,7 @@ AFRAME.registerComponent('mobile-console', {
       right: 0;
       width: ${this.data.tapAreaSize}px;
       height: ${this.data.tapAreaSize}px;
-      z-index: 9998;
+      z-index: 999999;
       background: transparent;
       cursor: pointer;
     `;
