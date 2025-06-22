@@ -17,7 +17,7 @@ AFRAME.registerComponent('ui-overlay', {
             loadingContainer.style.display = 'none';
             if (typeof callback === 'function') callback();
           }, 400);
-        }, 2000);
+        }, 5500);
       } else {
         if (typeof callback === 'function') callback();
       }
@@ -81,9 +81,9 @@ AFRAME.registerComponent('ui-overlay', {
     const uiContainer = this.el;
     //console.log('ui-overlay init');
     if (uiContainer) {
-      showLoadingScreen(() => {
-        toggleSelector('.instructions-container',true);
-      });
+      // showLoadingScreen(() => {
+      //   toggleSelector('.instructions-container',true);
+      // });
       // Force reflow to ensure animation triggers
       //void uiContainer.offsetWidth;
     }
@@ -130,7 +130,12 @@ AFRAME.registerComponent('ui-overlay', {
         }
         const modelIndex = modelConfig.models.findIndex(m => m.id === modelId);
         if (modelIndex !== -1) {
-          loadModelByIndex(modelIndex);
+          // Get the model-loader-controller component and call its loadModelByIndex method
+          const scene = document.querySelector('a-scene');
+          const loader = scene.components['model-loader-controller'];
+          if (loader) {
+            loader.loadModelByIndex(modelIndex);
+          }
           // Hide the model selector modal
           const selectorContainer = document.querySelector('.model-selector-container');
           if (selectorContainer) {
