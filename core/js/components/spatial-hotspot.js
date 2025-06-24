@@ -190,24 +190,19 @@ AFRAME.registerComponent('spatial-hotspot', {
             this.labelEl.setAttribute('scale', `${invScale.x} ${invScale.y} ${invScale.z}`);
             this.labelEl.setAttribute('visible', 'false'); // Hide by default
             this.labelEl.setAttribute('position', '0 5 0.1');
-        // Stroke offsets (8 directions)
-        const strokeOffsets = [
-            [0.02, 0, 0], [-0.02, 0, 0], [0, 0.02, 0], [0, -0.02, 0],
-            [0.014, 0.014, 0], [-0.014, 0.014, 0], [0.014, -0.014, 0], [-0.014, -0.014, 0]
-        ];
-        strokeOffsets.forEach(offset => {
-            const stroke = document.createElement('a-entity');
-            stroke.setAttribute('text', {
-                value: this.data.label,
-                align: 'center',
-                color: '#000',
-                width: 2,
-                baseline: 'top',
-                side: 'double'
-            });
-            stroke.setAttribute('position', `${offset[0]} ${offset[1]} ${offset[2]}`);
-            this.labelEl.appendChild(stroke);
+        // Stroke (black, slightly larger)
+        const stroke = document.createElement('a-entity');
+        stroke.setAttribute('text', {
+            value: this.data.label,
+            align: 'center',
+            color: '#000',
+            width: 2,
+            baseline: 'top',
+            side: 'double'
         });
+        stroke.setAttribute('position', '0 0 -0.01');
+        stroke.setAttribute('scale', '1.01 1.01 1.01');
+        this.labelEl.appendChild(stroke);
         // Main label (white, centered)
         const mainText = document.createElement('a-entity');
         mainText.setAttribute('text', {
@@ -219,9 +214,10 @@ AFRAME.registerComponent('spatial-hotspot', {
             side: 'double'
         });
         mainText.setAttribute('position', '0 0 0');
+        mainText.setAttribute('scale', '1 1 1');
         this.labelEl.appendChild(mainText);
         this.hotspotEl.appendChild(this.labelEl);
-            console.log('[HOTSPOT_DEBUG] [spatial-hotspot] init(): Appended label with stroke to marker:', this.hotspotEl);
+            console.log('[HOTSPOT_DEBUG] [spatial-hotspot] init(): Appended label with single stroke to marker:', this.hotspotEl);
         }
     },
 
