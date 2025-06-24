@@ -5,54 +5,161 @@ html{
 
 :root {
 
-    /* standard timings */
-    --xrs-duration-short: 0.25s;
-    --xrs-duration-medium: 0.5s;
-    --xrs-duration-long: 1s;
+/* https://coolors.co/0b0d1e-21295c-1b3b6f-065a82-9eb3c2 */
+
+/* CSS HEX */
+--rich-black-hex: #0b0d1eff;
+--space-cadet-hex: #21295cff;
+--yinmn-blue-hex: #244f94ff;
+--columbia-blue-hex: #CCD8E0ff;
+
+/* RGB values (without alpha) for use in rgba() */
+--rich-black-rgb: 11, 13, 30;
+--space-cadet-rgb: 33, 41, 92;
+--yinmn-blue-rgb: 36, 79, 148;
+--columbia-blue-rgb: 204, 216, 224;
+
+/* Full rgba values with alpha */
+--rich-black: rgba(11, 13, 30, 1);
+--space-cadet: rgba(33, 41, 92, 1);
+--yinmn-blue: rgba(36, 79, 148, 1);
+--columbia-blue: rgba(204, 216, 224, 1);
+
+/* Gradient */
+--gradient-top: linear-gradient(0deg, #0b0d1eff, #21295cff, #244f94ff, #9eb3c2ff);
+--gradient-right: linear-gradient(90deg, #0b0d1eff, #21295cff, #244f94ff, #9eb3c2ff);
+--gradient-bottom: linear-gradient(180deg, #0b0d1eff, #21295cff, #244f94ff, #9eb3c2ff);
+--gradient-left: linear-gradient(270deg, #0b0d1eff, #21295cff, #244f94ff, #9eb3c2ff);
+--gradient-top-right: linear-gradient(45deg, #0b0d1eff, #21295cff, #244f94ff, #9eb3c2ff);
+--gradient-bottom-right: linear-gradient(135deg, #0b0d1eff, #21295cff, #244f94ff, #9eb3c2ff);
+--gradient-top-left: linear-gradient(225deg, #0b0d1eff, #21295cff, #244f94ff, #9eb3c2ff);
+--gradient-bottom-left: linear-gradient(315deg, #0b0d1eff, #21295cff, #244f94ff, #9eb3c2ff);
+--gradient-radial: radial-gradient(#0b0d1eff, #21295cff, #244f94ff, #9eb3c2ff);
 
 
-    /* padding defaults*/
-    --xrs-padding-default: 0.5rem;
-    --xrs-padding-double: calc(var(--xrs-padding-default) * 2);
-    --xrs-padding-triple: calc(var(--xrs-padding-default) * 3);
+--xrs-default-font-size-small: 0.9rem;
+--xrs-default-font-size: 1rem;
+--xrs-default-font-size-large: 1.5rem;
+--xrs-default-font-size-xlarge: 2rem;
 
 
-    --xrs-black-15percent: rgba(0, 0, 0, 0.15);
-    --xrs-black-25percent: rgba(0, 0, 0, 0.25);
-    --xrs-black-50percent: rgba(0, 0, 0, 0.50);
-    --xrs-black-75percent: rgba(0, 0, 0, 0.75);
+--xrs-default-opacity: 0.9;
+--xrs-default-opacity-hover: 0.95;
+--xrs-default-opacity-active: 1.0;
+--xrs-default-opacity-accent: 0.5;
 
 
-    /* background colors 
-        navbars, panels, etc.
-    */
-    --xrs-text-color: #FFF;
-    --xrs-text-shadow: 1px 2px 3px #000;
-    --xrs-background-color: rgba(79, 79, 79, 0.90);
-    --xrs-background-color-gradient: linear-gradient(0deg,rgba(0, 0, 0, 0.75) 0%, rgba(50,50,50, 0.55) 100%);
-    --xrs-navbar-background-color-gradient: linear-gradient(0deg,rgba(0, 0, 0, 0.75) 0%, rgba(50,50,50, 0.25) 100%);
-    
-    
+--xrs-theme-color-bg-primary: rgba(var(--rich-black-rgb), var(--xrs-default-opacity));
+--xrs-theme-color-bg-primary-falloff: rgba(var(--rich-black-rgb), var(--xrs-default-opacity-accent));
+
+--xrs-theme-color-bg-secondary: rgba(var(--space-cadet-rgb), var(--xrs-default-opacity));
+--xrs-theme-color-bg-secondary-falloff: rgba(var(--rich-black-rgb), var(--xrs-default-opacity-accent));
+
+--xrs-theme-color-bg-tertiary: rgba(var(--columbia-blue-rgb), var(--xrs-default-opacity));
+--xrs-theme-color-bg-control: rgba(var(--yinmn-blue-rgb), var(--xrs-default-opacity));
+--xrs-theme-color-bg-control-hover: rgba(var(--yinmn-blue-rgb), var(--xrs-default-opacity-hover));
+--xrs-theme-color-bg-control-active: var(--yinmn-blue);
+--xrs-theme-color-bg-control-accent: var(--yinmn-blue);
+
+--xrs-black-15percent: rgba(0, 0, 0, 0.15);
+--xrs-black-25percent: rgba(0, 0, 0, 0.25);
+--xrs-black-50percent: rgba(0, 0, 0, 0.50);
+--xrs-black-75percent: rgba(0, 0, 0, 0.75);
+--xrs-black-100percent: rgba(0, 0, 0, 1.0);
+
+
+/* standard timings */
+--xrs-duration-short: 0.25s;
+--xrs-duration-medium: 0.5s;
+--xrs-duration-long: 1s;
+
+
+/* padding defaults*/
+--xrs-padding-default: 1rem;
+--xrs-padding-half: calc(var(--xrs-padding-default) * 0.5);
+--xrs-padding-double: calc(var(--xrs-padding-default) * 2);
+--xrs-padding-triple: calc(var(--xrs-padding-default) * 3);
+
+
+
+
+/* background colors 
+    navbars, panels, etc.
+*/
+--xrs-text-color: #FFF;
+--xrs-text-shadow: 1px 2px 3px var(--xrs-theme-color-bg-primary);
+--xrs-background-color: rgba(var(--rich-black-rgb), var(--xrs-default-opacity));
+--xrs-background-color-gradient: linear-gradient(0deg, var(--xrs-theme-color-bg-primary) 80%, var(--xrs-theme-color-bg-primary-falloff) 100%);
+--xrs-navbar-background-color-gradient: linear-gradient(0deg, var(--xrs-theme-color-bg-primary) 80%, var(--xrs-theme-color-bg-secondary-falloff) 100%);
+
+
     /* buttons */
     --xrs-button-color: #FFF;
     --xrs-button-color-hover: #FFF;
     --xrs-button-color-active: #FFF;
-    --xrs-button-background-color: rgba(0, 0, 0, 0.15);
-    --xrs-button-background-color-hover: rgba(28, 105, 212, 0.65);
-    --xrs-button-background-color-active: rgba(28, 105, 212, 0.90);
+    --xrs-button-background-color: var(--xrs-black-15percent);
+    --xrs-button-background-color-hover: var(--xrs-theme-color-bg-control-hover);
+    --xrs-button-background-color-active: var(--xrs-theme-color-bg-control-active);
 
-    --xrs-modal-background-color: linear-gradient(0deg, rgba(16,0,12,0.95), rgba(15,1,22,0.95), rgba(11,4,31,0.95), rgba(4,9,37,0.95));
+    --xrs-modal-background-color: linear-gradient(0deg, rgba(16,0,12,1), var(--xrs-theme-color-bg-primary), var(--xrs-theme-color-bg-secondary), var(--xrs-theme-color-bg-tertiary));
     
+
     /* to configure */
     --xrs-control-radius: 0.2rem;
     --xrs-control-border-width: 1px;
 
-    --xrs-control-size: 1rem;
-    --xrs-control-height: 2rem;
+
+    --xrs-control-height: 3.2rem;
+    --xrs-control-min-width: 3.2rem;
+
+
     --xrs-control-line-height: 1.5;
-    --xrs-control-padding-vertical: calc(0.5rem - 1px);
+    --xrs-control-padding-vertical: calc(var(--xrs-padding-half) - 1px);
     --xrs-control-padding-horizontal: calc(0.75rem - 1px);
-}   
+
+}
+
+/* Firefox */
+body {
+    scrollbar-color: #555 #111; /* thumb | track */
+    scrollbar-width: auto;
+  }
+  
+  /* WebKit (Chrome, Edge, Safari, Opera) */
+  ::-webkit-scrollbar {
+    width: 1rem;
+    height: 1rem;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: #111;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background-color: #333;
+    border-radius: 0rem;
+    border: 1rem solid #111; /* creates space around thumb */
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #777;
+  }
+
+
+
+h1 {
+    font-size: var(--xrs-default-font-size-xlarge);
+}
+h2 {
+    font-size: var(--xrs-default-font-size-large);
+}
+h3 {
+        font-size: var(--xrs-default-font-size);
+}
+h4 {
+    font-size: var(--xrs-default-font-size);
+    font-weight: 500;
+}
 
 
 button, .button, select, textarea, input {
@@ -66,7 +173,7 @@ button, .button, select, textarea, input {
     /* position properties */
     position: relative;
     /* dimensions, margins, padding, etc. */
-    height: var(--xrs-control-height);
+    
     padding: var(--xrs-control-padding-vertical) var(--xrs-control-padding-horizontal);
     vertical-align: top;
 
@@ -79,10 +186,12 @@ button, .button, select, textarea, input {
     filter: drop-shadow(0px 0px 10px rgba(0, 0, 0, 0.5));
     text-shadow: 1px 2px 3px #000;
 
-    font-size: var(--xrs-control-size);
+    font-family: inherit;
+    font-size: var(--xrs-default-font-size);
     line-height: var(--xrs-control-line-height);
+
     transition-duration: var(--xrs-duration-short);
-    transition-property: background-color, border-color, box-shadow, color;
+    transition-property: background-color, border-color, box-shadow, color, width;
 
 }
 
@@ -92,18 +201,16 @@ button, .button, select, textarea, input {
     display: block;
     /* position properties */
     /* dimensions, margins, padding, etc. */
-    height: 3.2rem;
+    height: var(--xrs-control-height);
     width: auto;
-    min-width: 3.2rem;
+    min-width: var(--xrs-control-min-width);
 
-    padding: 0.5rem;
+    padding: var(--xrs-control-padding-vertical) var(--xrs-control-padding-horizontal);
     /* colours and style properties */
 
     background: var(--xrs-button-background-color);
     color: var(--xrs-button-color);
 
-    font-family: inherit;
-    font-size: 1rem;
     white-space: nowrap;
 
     &:hover { 
@@ -163,7 +270,7 @@ button, .button, select, textarea, input {
         bottom: 100%;
         margin-bottom: 0.5rem;
         border-radius: 0.25rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        box-shadow: 0 2px 8px var(--xrs-black-25percent);
         width: 6rem;
         flex-direction: column;
         overflow: hidden;
@@ -415,11 +522,13 @@ a-entity[device-presentation-controller] {
 }
 
 
+
+
 .responsive-media {
     position: relative;
     width: 100%;
     overflow: hidden;
-  }
+}
   
   .responsive-media iframe,
   .responsive-media img {
@@ -468,16 +577,16 @@ a-entity[device-presentation-controller] {
     max-height: 600px;
     width: 100%;
     background: var(--xrs-background-color-gradient);
-    border: 1px solid var(--xrs-black-25percent);
+    /* border: 1px solid var(--xrs-black-15percent);
     border-radius: var(--xrs-control-radius);
-    box-shadow: 0 5px 15px var(--xrs-black-50percent);
+    box-shadow: 0 5px 15px var(--xrs-black-50percent); */
     z-index: 9999;
     display: flex;
     flex-direction: column;
     color: var(--xrs-text-color);
     text-shadow: var(--xrs-text-shadow);
     transition: opacity 0.3s ease, transform 0.3s ease;
-    background: var(--xrs-modal-background-color);
+    /* background: var(--xrs-modal-background-color); */
 }
 
 a-entity[modal-dialog][visible="false"] .modal-dialog-container {
@@ -496,16 +605,17 @@ a-entity[modal-dialog][visible="true"] .modal-dialog-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--xrs-padding-double);
+    padding: var(--xrs-padding-half);
     border-bottom: 1px solid var(--xrs-black-25percent);
 }
 
 .modal-title {
-    font-size: 1.25rem;
-    font-weight: 500;
+    font-size: var(--xrs-default-font-size-large);
+    font-weight: 400;
     display: flex;
     align-items: center;
     gap: var(--xrs-padding-default);
+    padding-left: var(--xrs-padding-half);
 }
 
 .modal-close-x {
@@ -514,18 +624,20 @@ a-entity[modal-dialog][visible="true"] .modal-dialog-container {
     font-size: 1.5rem;
     color: var(--xrs-text-color);
     cursor: pointer;
-    padding: 0 var(--xrs-padding-default);
+    width: 3.2rem;
+    height: 3.2rem;
+    transition: scale var(--xrs-duration-short) ease;
 }
 
 .modal-close-x:hover {
     color: var(--xrs-button-color-hover);
+    scale: 1.05;
 }
 
 .modal-content {
-    padding: var(--xrs-padding-double);
+    padding: var(--xrs-padding-default) var(--xrs-padding-double);
     overflow-y: auto;
     overflow-x: hidden;
-    flex-grow: 1; /* Allows content to take up available space */
 }
 
 .modal-footer {
@@ -600,3 +712,74 @@ a-entity[modal-dialog][visible="true"] .modal-dialog-container {
         
 
 }   
+
+
+
+/* ---------------------------
+   DEFAULT DESKTOP (≥1024px)
+---------------------------- */
+:root {
+    --device: desktop|xl|1024px-inf|landscape;
+  }
+  
+  @media (min-width: 1024px) and (orientation: portrait) {
+    :root {
+      --device: desktop|xl|1024px-inf|portrait;
+    }
+  }
+  
+  
+  /* ---------------------------
+     LANDSCAPE PHONES
+     Wide but short (often < 500px height)
+  ---------------------------- */
+  @media (max-width: 1023px) and (max-height: 499px) and (orientation: landscape) {
+    :root {
+      --device: phone|sm|landscape-low-height|landscape;
+    }
+  }
+  
+  
+  /* ---------------------------
+     PORTRAIT PHONES
+     Narrow width (≤ 767px), tall height (≥ 600px)
+  ---------------------------- */
+  @media (max-width: 767px) and (min-height: 600px) and (orientation: portrait) {
+    :root {
+      --device: phone|sm|0px-767px|portrait;
+    }
+  }
+  
+  
+  /* ---------------------------
+     GENERAL PHONES
+     Backup for phones not caught above
+  ---------------------------- */
+  @media (max-width: 767px) and (orientation: landscape) {
+    :root {
+      --device: phone|sm|0px-767px|landscape;
+    }
+  }
+  
+  @media (max-width: 479px) {
+    :root {
+      --device: phone|xs|0px-479px|portrait;
+    }
+  }
+  
+  
+  /* ---------------------------
+     TABLETS
+     Wider than phones, height usually > 500px
+  ---------------------------- */
+  @media (min-width: 768px) and (max-width: 1023px) and (min-height: 500px) {
+    :root {
+      --device: tablet|md|768px-1023px|landscape;
+    }
+  }
+  
+  @media (min-width: 768px) and (max-width: 1023px) and (orientation: portrait) and (min-height: 600px) {
+    :root {
+      --device: tablet|md|768px-1023px|portrait;
+    }
+  }

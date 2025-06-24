@@ -1,7 +1,13 @@
-{
+{        
+  "name": "3D Model Viewer",
+  "image ": "./assets/images/splash.jpg",
+  "description": "<h4>3D Model Test</h4><p>A simple animated model that show information hotspot, a quiz and an exploding view of the components.</p>",
   "models": [
     {
       "id": "colgatebox",
+      "background": "./assets/images/background-01.jpg",
+      "name": "colgatebox",
+      "description": "A 3D model of the Colgate Box.",
       "filename": "colgateboxcomplete.glb",
       "modelPosition": { "x": 0, "y": 0, "z": 0 },
       "modelRotation": { "x": 0, "y": 0, "z": 0 },
@@ -11,7 +17,212 @@
         "ZoomMaxDistance":0.5,
         "InitialZoomAmmount": 0.5
       },
-      "hotspots": []
+
+      "hotspots": [
+        {
+          "id": "hotspot_1750662717007",
+          "type": "media",
+          "label": "Hotspot 1",
+          "name": "Hotspot 1",
+          "modelUrl": "./core/assets/3d/map_pointer_3d_icon.glb",
+          "modelScale": { "x": 0.01, "y": 0.01, "z": 0.01 },         
+          "parentName": "mesh_0_18",
+          "visited": false,
+          "requireVisit": false,
+          "position": {
+            "x": -0.007177751427460827,
+            "y": -0.045590873807668686,
+            "z": 0.1778939762715815
+          },
+          "details": {
+            "targetTitle": "Hotspot 1",
+            "targetDesc": "<h4>Section Title</h4><figure class=\"responsive-media\"><img src=\"https://cataas.com/cat?width=720\" alt=\"Descriptive alt text\" loading=\"lazy\" /><figcaption>Optional image caption goes here.</figcaption></figure><p>This is a paragraph of body text. You can use <strong>bold</strong>, <em>italic</em>, or <a href=\"#\">inline links</a> as needed.</p><ul><li>Bullet point one</li><li>Bullet point two</li><li>Bullet point three</li></ul>"
+          },
+          "color": "#7cfc00"
+        },
+        {
+          "id": "hotspot_1750662731611",
+          "type": "media",
+          "label": "Hotspot 2",
+          "name": "Hotspot 2",         
+          "modelUrl": "./core/assets/3d/map_pointer_3d_icon.glb",
+          "modelScale": { "x": 0.01, "y": 0.01, "z": 0.01 },                
+          "parentName": "mesh_0_16",
+          "visited": false,
+          "requireVisit": false,
+          "position": {
+            "x": -0.061611228353920584,
+            "y": 0.0007999999797903001,
+            "z": 0.03915070674980446
+          },
+          "details": {
+            "targetTitle": "Hotspot 2",
+            "targetDesc": "Hotspot 2 Description!"
+          },
+          "color": "#9400d3"
+        },
+        {
+          "id": "hotspot_1750662733248",
+          "type": "media",
+          "label": "Hotspot 3",
+          "name": "Hotspot 3",
+          "modelUrl": "./core/assets/3d/map_pointer_3d_icon.glb",
+          "modelScale": { "x": 0.01, "y": 0.01, "z": 0.01 },                 
+          "parentName": "mesh_0_19",
+          "visited": false,
+          "requireVisit": false,
+          "position": {
+            "x": -0.07142038527022092,
+            "y": 0.0003235585033775912,
+            "z": -0.030377497275832846
+          },
+          "details": {
+            "targetTitle": "Hotspot 3",
+            "targetDesc": "Hotspot 3 Description!"
+          },
+          "color": "#ff69b4"
+        },
+        {
+          "id": "hotspot_1750662735553",
+          "type": "media",
+          "label": "Hotspot 4",
+          "name": "Hotspot 4",
+          "modelUrl": "./core/assets/3d/map_pointer_3d_icon.glb",
+          "modelScale": { "x": 0.01, "y": 0.01, "z": 0.01 },                 
+          "parentName": "mesh_0_17",
+          "visited": false,
+          "requireVisit": false,
+          "position": {
+            "x": 0.02587875973730848,
+            "y": 0.0007999999797903001,
+            "z": -0.03356271366895601
+          },
+          "details": {
+            "targetTitle": "Hotspot 4",
+            "targetDesc": "Hotspot 4 Description!"
+          },
+          "color": "#1e90ff"
+        },
+        {
+          "id": "hotspot_1750662741424",
+          "type": "media",
+          "label": "Hotspot 5",
+          "name": "Hotspot 5",
+          "modelUrl": "./core/assets/3d/map_pointer_3d_icon.glb",
+          "modelScale": { "x": 0.01, "y": 0.01, "z": 0.01 },                 
+          "parentName": "mesh_0_2",
+          "visited": false,
+          "requireVisit": false,
+          "position": {
+            "x": 0.05381319704638799,
+            "y": 0.0007999999797903001,
+            "z": 0.03091212843571446
+          },
+          "details": {
+            "targetTitle": "Hotspot 5",
+            "targetDesc": "Hotspot 5 Description!"
+          },
+          "color": "#00fa9a"
+        },
+        {
+          "id": "hotspot_1750662893705",
+          "type": "media",
+          "label": "Hotspot 6",
+          "name": "Hotspot 6",
+          "modelUrl": "./core/assets/3d/map_pointer_3d_icon.glb",
+          "modelScale": { "x": 0.01, "y": 0.01, "z": 0.01 },                 
+          "parentName": "mesh_0_24",
+          "visited": false,
+          "requireVisit": false,
+          "position": {
+            "x": -0.0013867009797469548,
+            "y": 0.06843802072184663,
+            "z": -0.13027518732310572
+          },
+          "details": {
+            "targetTitle": "Hotspot 6",
+            "targetDesc": "Hotspot 6 Description!"
+          },
+          "color": "#ffa500"
+        }
+      ],
+      "parts": {
+        "Flouride box": {
+          "name": "Flouride box",
+          "color": "#96ceb4",
+          "meshes": [
+            "mesh_0_2"
+          ],
+          "description": "3D model of the Colgate Duraphat Fluoride tube box"
+        },
+        "Real Fluoride Tube": {
+          "name": "Real Fluoride Tube",
+          "color": "#ff6b6b",
+          "meshes": [
+            "mesh_0_6",
+            "mesh_0_7",
+            "mesh_0_8",
+            "mesh_0_9",
+            "mesh_0_10",
+            "mesh_0_11",
+            "mesh_0_12",
+            "mesh_0_13"
+          ],
+          "description": ""
+        },
+        "Single Dose Applicators x2": {
+          "name": "Single Dose Applicators x2",
+          "color": "#ff9ff3",
+          "meshes": [
+            "mesh_0_14",
+            "mesh_0_15"
+          ],
+          "description": ""
+        },
+        "Fluoride Dosage Pad": {
+          "name": "Fluoride Dosage Pad",
+          "color": "#feca57",
+          "meshes": [
+            "mesh_0_16"
+          ],
+          "description": ""
+        },
+        "Info sheet": {
+          "name": "Info sheet",
+          "color": "#4ecdc4",
+          "meshes": [
+            "mesh_0_18"
+          ],
+          "description": ""
+        },
+        "Stickers": {
+          "name": "Stickers",
+          "color": "#54a0ff",
+          "meshes": [
+            "mesh_0_19"
+          ],
+          "description": ""
+        },
+        "Packaged Box from Colgate": {
+          "name": "Packaged Box from Colgate",
+          "color": "#ff9f43",
+          "meshes": [
+            "mesh_0",
+            "mesh_0_1",
+            "mesh_0_3",
+            "mesh_0_4",
+            "mesh_0_5",
+            "mesh_0_17",
+            "mesh_0_20",
+            "mesh_0_21",
+            "mesh_0_22",
+            "mesh_0_23",
+            "mesh_0_24"
+          ],
+          "description": ""
+        }
+      }
+      
     },
     {
       "id": "tubebox",
@@ -63,31 +274,66 @@
         "ZoomMaxDistance":5.5,
         "InitialZoomAmmount": 5.5
       },
-      "hotspots": [
+      "hotspots": 
+      [
         {
-          "id": 0,
+          "id": "hotspot_1750656961976",
           "type": "media",
-          "label": "Skull",
-          "position": "2.0 0.5 2.0",
+          "label": "Hotspot 1",
+          "name": "Hotspot 1",
+          "parentName": "Object_9",
           "visited": false,
-          "requireAnswer": false,
-          "details": {                    
-            "targetTitle": "Tricertops Skull",
-            "targetDesc": "<div class=\"responsive-media ratio-16-9\"><iframe width=\"560\" height=\"315\" src=\"https://www.youtube.com/embed/YKzRPFvky9Y?si=W4hK6rEOe-nYiyvm\" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" referrerpolicy=\"strict-origin-when-cross-origin\" allowfullscreen></iframe></div><p>The skull of the Triceratops.</p>"
-          }
+          "requireVisit": false,
+          "position": {
+            "x": -0.7876157106006818,
+            "y": 1.1900332968806817,
+            "z": 2.3600076094388696
+          },
+          "details": {
+            "targetTitle": "Hotspot 1",
+            "targetDesc": "<h4>Section Title</h4><figure class=\"responsive-media ratio-16-9\"><img src=\"https://placehold.co/1280x720\" alt=\"Descriptive alt text\" /><figcaption>Optional image caption goes here.</figcaption></figure><p>This is a paragraph of body text. You can use <strong>bold</strong>, <em>italic</em>, or <a href=\"#\">inline links</a> as needed.</p><ul><li>Bullet point one</li><li>Bullet point two</li><li>Bullet point three</li></ul>"
+
+          },
+          "color": "#00ced1"
         },
         {
-          "id": 1,
-          "type": "quiz",
-          "label": "Ribs",
-          "position": "1.0 1.0 -2.0",
+          "id": "hotspot_1750656963955",
+          "type": "media",
+          "label": "Hotspot 2",
+          "name": "Hotspot 2",
+          "parentName": "Object_9",
           "visited": false,
-          "requireAnswer": true,
+          "requireVisit": false,
+          "position": {
+            "x": -0.09716301315161965,
+            "y": 1.5609579314042612,
+            "z": 2.4935496943629776
+          },
           "details": {
-            "targetTitle": "Tricertops Ribs",
-            "targetDesc": "<div class=\"responsive-media ratio-16-9\"><img src='./assets/images/hotspot-01.jpg' alt='Triceratops Ribs' /></div><p>The ribs of the Triceratops.</p><p>The ribs of the Triceratops.</p><p>The ribs of the Triceratops. - The ribs of the Triceratops.</p>"
-          }
-        }      
+            "targetTitle": "Hotspot 2",
+            "targetDesc": ""
+          },
+          "color": "#1e90ff"
+        },
+        {
+          "id": "hotspot_1750656966177",
+          "type": "media",
+          "label": "Hotspot 3",
+          "name": "Hotspot 3",
+          "parentName": "Object_9",
+          "visited": false,
+          "requireVisit": false,
+          "position": {
+            "x": -0.015268845128726435,
+            "y": 1.9831467096420257,
+            "z": 0.8871680375794012
+          },
+          "details": {
+            "targetTitle": "Hotspot 3",
+            "targetDesc": ""
+          },
+          "color": "#ff69b4"
+        }
       ]
     },
     {
@@ -117,9 +363,9 @@
       "hotspots": []
     },    
     {
-      "id": "masterchief",
-      "filename": "masterchief.glb",
-      "modelPosition": { "x": 0, "y": 0, "z": 0 },
+      "id": "trimmer",
+      "filename": "trimmer-edger-v3.glb",
+      "modelPosition": { "x": -1.75, "y": -1.01, "z": 0.617 },
       "modelRotation": { "x": 0, "y": 0, "z": 0 },
       "orbitControls": {
         "InitialPolarAngle": 90,
@@ -127,7 +373,131 @@
         "ZoomMaxDistance": 5.085,
         "InitialZoomAmmount": 5.085
       },
-      "hotspots": []
+      "hotspots": 
+      [
+        {
+          "id": "hotspot_1750663871417",
+          "type": "media",
+          "label": "Hotspot 1",
+          "name": "Hotspot 1",
+          "parentName": "mesh_72",
+          "visited": false,
+          "requireVisit": false,
+          "position": {
+            "x": -1.0177281664431075,
+            "y": 1.2496227552125376,
+            "z": 0.06840645873637097
+          },
+          "details": {
+            "targetTitle": "Hotspot 1",
+            "targetDesc": "Hotspot 1 Description!"
+          },
+          "color": "#9400d3"
+        },
+        {
+          "id": "hotspot_1750663904466",
+          "type": "media",
+          "label": "Hotspot 2",
+          "name": "Hotspot 2",
+          "parentName": "case_upper_half_1",
+          "visited": false,
+          "requireVisit": false,
+          "position": {
+            "x": 0.6683846864693657,
+            "y": 0.34653936177155154,
+            "z": 0.06074305162934346
+          },
+          "details": {
+            "targetTitle": "Hotspot 2",
+            "targetDesc": "Hotspot 2 Description!"
+          },
+          "color": "#00ced1"
+        },
+        {
+          "id": "hotspot_1750663907211",
+          "type": "media",
+          "label": "Hotspot 3",
+          "name": "Hotspot 3",
+          "parentName": "rod_upper_half",
+          "visited": false,
+          "requireVisit": false,
+          "position": {
+            "x": 1.5305964423693017,
+            "y": -0.5400648941013599,
+            "z": 0.08465302851584791
+          },
+          "details": {
+            "targetTitle": "Hotspot 3",
+            "targetDesc": "Hotspot 3 Description!"
+          },
+          "color": "#1e90ff"
+        }
+      ],
+      "parts": {
+        "Blades": {
+          "name": "Blades",
+          "color": "#54a0ff",
+          "meshes": [
+            "blade_hub",
+            "blade_metal_pin",
+            "edger_blade_metal",
+            "edger_blade_metal_1",
+            "blade_metal_pin_1",
+            "edger_blade_metal_2",
+            "edger_blade_metal_3",
+            "edger_blade_metal_4",
+            "blade_metal_pin_3",
+            "blade_metal_pin_4",
+            "blade_metal_pin_5",
+            "edger_blade_metal_5",
+            "mesh_218",
+            "mesh_217",
+            "mesh_216",
+            "mesh_215",
+            "mesh_214",
+            "mesh_213",
+            "mesh_212",
+            "mesh_211",
+            "mesh_209",
+            "mesh_210",
+            "mesh_208",
+            "mesh_207",
+            "mesh_206",
+            "mesh_205",
+            "mesh_204",
+            "mesh_203",
+            "mesh_202",
+            "mesh_201",
+            "mesh_200",
+            "mesh_199",
+            "mesh_198",
+            "mesh_197",
+            "mesh_196",
+            "mesh_195",
+            "mesh_194",
+            "mesh_193",
+            "mesh_192",
+            "mesh_191",
+            "mesh_190",
+            "mesh_189",
+            "mesh_188",
+            "mesh_187",
+            "mesh_186",
+            "mesh_185",
+            "mesh_184",
+            "mesh_183",
+            "mesh_182",
+            "mesh_181",
+            "mesh_180",
+            "mesh_179",
+            "mesh_178",
+            "mesh_177_1",
+            "mesh_177",
+            "mesh_176_1"
+          ],
+          "description": ""
+        }
+      }
     },    
     {
       "id": "technical_difficulties",

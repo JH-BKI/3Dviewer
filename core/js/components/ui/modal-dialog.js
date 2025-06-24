@@ -47,7 +47,7 @@ AFRAME.registerComponent('modal-dialog', {
     const header = document.createElement('div');
     header.className = 'modal-header';
 
-    const titleContainer = document.createElement('div');
+    const titleContainer = document.createElement('h3');
     titleContainer.className = 'modal-title';
     if(this.data.titleIcon) {
         const icon = document.createElement('i');
@@ -60,7 +60,7 @@ AFRAME.registerComponent('modal-dialog', {
 
     this.closeXButton = document.createElement('button');
     this.closeXButton.className = 'modal-close-x';
-    this.closeXButton.innerHTML = '&times;';
+    this.closeXButton.innerHTML = '<i class="fa-solid fa-xl fa-square-xmark"></i>';
 
     const content = document.createElement('div');
     content.className = 'modal-content';

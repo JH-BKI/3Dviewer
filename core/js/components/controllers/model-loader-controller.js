@@ -60,7 +60,7 @@ AFRAME.registerComponent('model-loader-controller', {
       if (window.modelConfig && window.modelConfig.models && window.modelConfig.models.length > 0) {
         console.log('Loading default model (index 0)');
         //this.loadModelByIndex(0);
-        this.loadModelByIndex(4);
+        this.loadModelByIndex(0);
       }
     } catch (error) {
       console.error('Failed to load model config:', error);
@@ -86,8 +86,8 @@ AFRAME.registerComponent('model-loader-controller', {
     // Add new model entity
     const scene = this.el.sceneEl;
     const entity = document.createElement('a-entity');
+    entity.setAttribute('id', 'loaded-model');
     entity.setAttribute('gltf-model', `assets/3d/${model.filename}`);
-    entity.setAttribute('id', '3D-object');
     
     const pos = model.modelPosition || { x: 0, y: 0, z: 0 };
     const rot = model.modelRotation || { x: 0, y: 0, z: 0 };

@@ -1,0 +1,1752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>A-Frame Hotspot Editor</title>
+  <script src="../../core/js/pkg/aframe.min.js"></script>
+  <script src="https://unpkg.com/aframe-environment-component@1.5.x/dist/aframe-environment-component.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/TransformControls.js"></script>
+  <script src="../../core/js/pkg/globalUtils.js"></script>
+  <style>
+    body { margin: 0; overflow: hidden; background: #111; }
+    
+    #ui-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 250px;
+      height: 100%;
+      padding: 20px;
+      box-sizing: border-box;
+      pointer-events: none;
+      z-index: 1000;
+      font-family: Arial, sans-serif;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      gap: 15px; /* Add some space between panels */
+      overflow-y: auto; /* Allow scrolling if panels overflow */
+    }
+    
+    .controls,
+    .hotspot-panel,
+    .mesh-panel,
+    .group-panel,
+    .model-position-panel,
+    .json-panel {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 5px;
+      border-radius: 8px;
+      pointer-events: auto;
+      color: white;
+    }
+    
+    .controls button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+    
+    .controls button:hover {
+      background: #0056b3;
+    }
+    
+    .hotspot-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px;
+      margin: 4px 0;
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+      border-left: 4px solid #ccc;
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+    
+    .hotspot-item:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    
+    .hotspot-item.selected {
+      background: rgba(0, 255, 127, 0.3);
+      border-left-color: #00ff7f;
+    }
+    
+    .hotspot-details {
+      display: none; /* Hidden by default */
+      padding: 8px 12px;
+      background: rgba(0,0,0,0.3);
+      margin: 0px 0px 0px 15px;
+      font-size: 12px;
+      color: #ddd;
+      border-radius: 4px;
+    }
+
+    .hotspot-details .coord-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2px 0;
+    }
+
+    .hotspot-details .coord-label {
+      font-weight: bold;
+      color: #aaa;
+      margin-right: 10px;
+    }
+
+    .hotspot-details .coord-value {
+      font-family: 'Courier New', monospace;
+      color: #fff;
+      background-color: #222;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+
+    .hotspot-item.open .hotspot-details {
+      display: block; /* Shown when the item has the 'open' class */
+    }
+    
+    .mesh-item {
+      padding: 6px;
+      margin: 2px 0;
+      background: rgba(255,255,255,0.05);
+      border-radius: 4px;
+      font-size: 12px;
+      color: #ccc;
+    }
+    
+    .mesh-item:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .mesh-item.highlighted {
+      background: rgba(255, 255, 0, 0.2);
+      color: #ffff00;
+      border: 1px solid #ffff00;
+    }
+    
+    .mesh-item.selected {
+      background: rgba(0, 123, 255, 0.3);
+      color: #007bff;
+      border: 1px solid #007bff;
+    }
+    
+    .mesh-item.selected.highlighted {
+      background: rgba(255, 193, 7, 0.3);
+      color: #ffc107;
+      border: 1px solid #ffc107;
+    }
+    
+    .hotspot-item button {
+      background: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    
+    .hotspot-item button:hover {
+      background: #c82333;
+    }
+    
+    .hotspot-item span {
+        padding-right: 1rem;
+    }
+
+    .json-panel {
+      position: fixed;
+      right: 20px;
+      top: 20px;
+      background: rgba(0, 0, 0, 0.9);
+      padding: 15px;
+      width: 500px;
+      border-radius: 8px;
+      pointer-events: auto;
+      max-height: 800px;
+      overflow-y: auto;
+      display: flex;
+      align-content: center;
+      justify-content: center;
+      align-items: stretch;
+      flex-direction: column;
+    }
+    
+    #json-data-area {
+      flex-grow: 1;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+      margin: 0;
+      border: 1px solid #444;
+      resize: vertical;
+    }
+
+    #json-update-btn {
+      margin-top: 10px;
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 250px;
+      align-self: end;
+    }
+
+    #json-update-btn:hover {
+      background: #0056b3;
+    }
+    
+    h3 {
+      margin: 0 0 10px 0;
+      font-size: 16px;
+    }
+    
+    p {
+      margin: 5px 0;
+      font-size: 14px;
+    }
+
+    .group-controls {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 10px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    
+    .group-controls button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 11px;
+    }
+    
+    .group-controls button:disabled {
+      background: #666;
+      cursor: not-allowed;
+    }
+    
+    .group-controls button:hover:not(:disabled) {
+      background: #0056b3;
+    }
+    
+    .group-mesh-list {
+      font-size: 10px;
+      color: #aaa;
+      margin-top: 5px;
+      padding-left: 10px;
+    }
+    
+    .group-mesh-item {
+      padding: 2px 0;
+    }
+    
+    
+    .position-controls {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    margin-bottom: 10px;
+    align-content: center;
+    justify-content: space-between;
+    align-items: center;
+    }
+    
+    .position-controls button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 11px;
+    }
+    
+    .position-controls button:hover {
+      background: #0056b3;
+    }
+    
+    .position-controls button.active {
+      background: #28a745;
+    }
+    
+    .position-display {
+      font-size: 11px;
+      color: #aaa;
+      margin-top: 8px;
+    }
+    
+    .position-coord {
+      display: flex;
+      justify-content: space-between;
+      margin: 2px 0;
+    }
+    
+    .position-coord input {
+      background: #222;
+      color: #fff;
+      border: 1px solid #444;
+      border-radius: 3px;
+      padding: 2px 4px;
+      font-size: 10px;
+      width: 60px;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <div id="ui-overlay">
+    <div class="controls">
+      <button id="toggle-json-button" onclick="document.querySelector('[editor-logic]').components['editor-logic'].toggleJsonPanel()">Toggle JSON</button>
+      <button id="toggle-grid-button" onclick="document.querySelector('[editor-logic]').components['editor-logic'].toggleGrid()">Toggle Grid</button>
+    </div>
+    
+    <div class="model-position-panel">
+      <h3>Model Position</h3>
+      <div class="position-controls">
+        <button id="model-position-toggle" onclick="document.querySelector('[editor-logic]').components['editor-logic'].toggleModelPositionMode()">Enable Position Edit</button>
+        <button id="reset-model-position" onclick="document.querySelector('[editor-logic]').components['editor-logic'].resetModelPosition()">Reset to Origin</button>
+      </div>
+      <div class="position-display">
+        <div class="position-coord">
+          <span>X:</span>
+          <input type="number" id="model-pos-x" step="0.01" onchange="document.querySelector('[editor-logic]').components['editor-logic'].updateModelPositionFromInput()">
+        </div>
+        <div class="position-coord">
+          <span>Y:</span>
+          <input type="number" id="model-pos-y" step="0.01" onchange="document.querySelector('[editor-logic]').components['editor-logic'].updateModelPositionFromInput()">
+        </div>
+        <div class="position-coord">
+          <span>Z:</span>
+          <input type="number" id="model-pos-z" step="0.01" onchange="document.querySelector('[editor-logic]').components['editor-logic'].updateModelPositionFromInput()">
+        </div>
+      </div>
+    </div>
+    
+    <div class="hotspot-panel">
+      <div class="hotspot-panel-header">
+      <h3>Hotspots (<span id="hotspot-count">0</span>)</h3>
+      <button id="mode-button" onclick="document.querySelector('[editor-logic]').components['editor-logic'].toggleMode()">Switch to Add Mode</button>
+      <p>Mode: <span id="mode-display">Add (click to place hotspots)</span></p>
+    </div>
+    <hr>
+      <div id="hotspot-list"></div>
+    </div>
+    
+    <div class="mesh-panel">
+      <div class="mesh-panel-header">
+      <h3>Model Meshes (<span id="mesh-count">0</span>)</h3>
+      <p style="font-size: 11px; color: #aaa; margin: 5px 0;">Click to select • Ctrl+Click to multi-select</p>
+      <p style="font-size: 11px; color: #007bff; margin: 5px 0;">Selected: <span id="selected-mesh-count">0</span></p>
+    </div>
+    <hr>
+      <div id="mesh-list"></div>
+    </div>
+    
+    <div class="group-panel">
+      <div class="group-panel-header">
+      <h3>Mesh Groups (<span id="group-count">0</span>)</h3>
+      </div>
+      <div class="group-controls">
+        <button id="create-group-btn" onclick="document.querySelector('[editor-logic]').components['editor-logic'].createGroupFromSelection()">Create Group</button>
+        <button id="delete-group-btn" onclick="document.querySelector('[editor-logic]').components['editor-logic'].deleteSelectedGroup()">Delete Group</button>
+      </div>
+      <div id="group-list"></div>
+    </div>
+    
+    <div class="json-panel">
+      <h3>Export Data (Hotspots, Parts & Position)</h3>
+      <textarea id="json-data-area" rows="15"></textarea>
+      <button id="json-update-btn">Create Hotspots From JSON</button>
+    </div>
+  </div>
+
+  <a-scene editor-logic xr-mode-ui="enabled: false">
+    <a-assets>
+      <a-asset-item id="default-model" src="animated_triceratops_skeleton.glb"></a-asset-item>
+    </a-assets>
+
+    <a-entity id="camera" camera position="0 1.5 3" 
+      look-controls="
+        enabled: true;
+        "
+      wasd-controls="
+        enabled: true;
+        acceleration: 20;
+        adAxis: x;
+        adInverted: false;
+        wsAxis: z;
+        wsInverted: false;
+        fly: true; /* When true, Q and E keys can be used for vertical movement */
+        ">
+      <a-entity cursor="rayOrigin: mouse;" raycaster="objects: .collidable;"></a-entity>
+    </a-entity>
+
+    <a-entity id="model-container" class="collidable">
+      <!-- Models will be loaded here -->
+    </a-entity>
+
+    <a-entity id="hotspots-container"></a-entity>
+
+    <!-- Central reference sphere -->
+    <a-sphere id="origin-sphere" position="0 0.01 0" radius="0.1" color="white" material="shader: flat;" dynamic-origin-scaler>
+      <a-plane position="0 0 0"  rotation="-90 0 0"  width="3"  height="3"  material="color: #cccccc; opacity: 0.25; transparent: true; shader: flat;">
+        <a-box position="0 0.01 0"  rotation="90 0 0"  width="3"  height="0.03"  depth="0.03"  material="color: red; opacity: 0.5; transparent: true; shader: flat;"></a-box>
+        <a-box position="0 0.01 0"  rotation="0 0 90"  width="3"  height="0.03"  depth="0.03"  material="color: blue; opacity: 0.5; transparent: true; shader: flat;"></a-box>
+        <a-box position="0 0 0"  rotation="0 90 0"  width="3"  height="0.03"  depth="0.03"  material="color: green; opacity: 0.5; transparent: true; shader: flat;"></a-box>
+      </a-plane>
+    </a-sphere>
+
+    <!-- Environment grid plane -->
+    <a-entity 
+      id="environment-grid"
+      position="0 0 0">
+      <a-plane 
+        position="0 0 0" 
+        rotation="-90 0 0" 
+        width="10" 
+        height="10" 
+        material="
+          color: #ffffff;
+          opacity: 0.1;
+          transparent: true;
+          shader: flat;
+        "
+        grid="
+          color: #888888;
+          cellSize: 1;
+          cellHeight: 1;
+        ">
+      </a-plane>
+    </a-entity>
+
+    <a-light type="ambient" color="#ffffff" intensity="0.6"></a-light>
+    <a-light type="directional" color="#ffffff" intensity="0.8" position="5 5 5"></a-light>
+  </a-scene>
+
+  <script>
+    AFRAME.registerComponent('editor-logic', {
+      init: function() {
+        this.state = {
+          mode: 'add', // 'add' or 'edit'
+          hotspots: [],
+          selectedHotspot: null,
+          modelMeshes: [],
+          selectedMeshes: [], // Replaces highlightedMesh for multi-select
+          meshGroups: [],     // To store user-defined groups of meshes
+          debugLines: [],     // To hold multiple debug lines
+          modelPosition: { x: 0, y: 0, z: 0 }, // Current model position
+          modelPositionMode: false, // Whether model position editing is enabled
+          modelPositionGizmo: null, // Reference to the position gizmo
+          gridVisible: true // Whether the grid is visible
+        };
+        
+        // Load default model
+        this.loadModel('animated_triceratops_skeleton.glb');
+        
+        // Setup drag and drop
+        this.setupDragAndDrop();
+        
+        // Setup click handling
+        this.modelContainer = this.el.sceneEl.querySelector('#model-container');
+        this.setupClickHandling();
+
+        // Bind 'this' context for functions used as callbacks or in other scopes
+        this.addHotspotMarker = this.addHotspotMarker.bind(this);
+        this.onKeyDown = this.onKeyDown.bind(this);
+
+        // Initialize TransformControls
+        this.camera = this.el.sceneEl.camera;
+        this.renderer = this.el.sceneEl.renderer;
+        this.transformControls = new THREE.TransformControls(this.camera, this.renderer.domElement);
+        this.el.sceneEl.object3D.add(this.transformControls);
+
+        this.transformControls.addEventListener('objectChange', () => {
+          if (this.state.selectedHotspot && this.state.selectedHotspot.marker) {
+            // Read position directly from the manipulated object3D
+            const newPos = this.state.selectedHotspot.marker.object3D.position;
+            this.state.selectedHotspot.position.x = newPos.x;
+            this.state.selectedHotspot.position.y = newPos.y;
+            this.state.selectedHotspot.position.z = newPos.z;
+            this.render(); // Update JSON output
+          }
+        });
+        this.transformControls.visible = false;
+
+        this.onKeyDown = this.onKeyDown.bind(this);
+        window.addEventListener('keydown', this.onKeyDown);
+        this.el.sceneEl.addEventListener('set-camera-view', this.setCameraView);
+
+        // Hide JSON panel by default
+        this.toggleJsonPanel();
+        this.render(); // Initial render to set button text
+
+        document.getElementById('json-update-btn').addEventListener('click', this.importFromJson.bind(this));
+      },
+      
+      remove: function() {
+        // Clean up listeners and objects
+        window.removeEventListener('keydown', this.onKeyDown);
+        this.el.sceneEl.removeEventListener('set-camera-view', this.setCameraView);
+        if (this.transformControls) {
+          this.transformControls.dispose();
+          if (this.transformControls.parent) {
+            this.transformControls.parent.remove(this.transformControls);
+          }
+        }
+      },
+      
+      tick: function() {
+        if (!this.el.sceneEl.camera) return;
+        const cameraEl = this.el.sceneEl.camera.el;
+        const cameraPos = cameraEl.object3D.getWorldPosition(new THREE.Vector3());
+
+        // Define our scaling parameters based on your request
+        const baseScaleMultiplier = 1.0; // This is the "10x bigger" value (was 0.1)
+        const minScale = 0.5;            // "half of that" initial value
+        const maxScale = 1.5;            // "1.5x of that" initial value
+
+        this.state.hotspots.forEach(hotspot => {
+            if (hotspot.marker) {
+                const markerPos = hotspot.marker.object3D.getWorldPosition(new THREE.Vector3());
+                const distance = markerPos.distanceTo(cameraPos);
+                
+                // Calculate the raw scale based on distance
+                const rawScale = distance * baseScaleMultiplier;
+
+                // Clamp the scale to our min/max bounds
+                const clampedScale = THREE.MathUtils.clamp(rawScale, minScale, maxScale);
+                
+                hotspot.marker.object3D.scale.set(clampedScale, clampedScale, clampedScale);
+            }
+        });
+      },
+      
+      loadModel: function(modelUrl) {
+        const sceneEl = this.el.sceneEl;
+        const modelEntity = sceneEl.querySelector('#model-container');
+        
+        // Clear existing model
+        modelEntity.innerHTML = '';
+        
+        // Clear all mesh selections and groups when loading new model
+        this.clearAllMeshSelections();
+        this.state.highlightedMesh = null;
+        this.state.meshGroups = [];
+        
+        // Reset model position and disable position editing
+        this.state.modelPosition = { x: 0, y: 0, z: 0 };
+        if (this.state.modelPositionMode) {
+          this.toggleModelPositionMode(); // This will disable the mode
+        }
+        
+        // Create new model entity
+        const newModel = document.createElement('a-entity');
+        newModel.setAttribute('gltf-model', modelUrl);
+        newModel.setAttribute('id', 'loaded-model');
+        newModel.setAttribute('class', 'collidable');
+        
+        // Add event listener for when model loads
+        newModel.addEventListener('model-loaded', (e) => {
+          console.log('Model loaded:', e.detail.model);
+          
+          const modelMeshes = [];
+          e.detail.model.traverse(node => {
+            if (node.isMesh) modelMeshes.push(node);
+          });
+          this.state.modelMeshes = modelMeshes;
+          this.render();
+        });
+        
+        modelEntity.appendChild(newModel);
+      },
+      
+      setupDragAndDrop: function() {
+        const canvas = this.el.sceneEl.canvas;
+        
+        canvas.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'copy';
+        });
+        
+        canvas.addEventListener('drop', (e) => {
+          e.preventDefault();
+          const files = e.dataTransfer.files;
+          if (files.length > 0) {
+            const file = files[0];
+            if (file.name.toLowerCase().endsWith('.glb') || file.name.toLowerCase().endsWith('.gltf')) {
+              const url = URL.createObjectURL(file);
+              this.loadModel(url);
+              this.state.hotspots = []; // Clear hotspots for new model
+              this.render();
+            }
+          }
+        });
+      },
+      
+      setupClickHandling: function() {
+        this.modelContainer.addEventListener('click', (e) => {
+          const intersection = e.detail.intersection;
+          if (!intersection) return;
+
+          const clickedObject = intersection.object;
+
+          // --- LOGIC FOR SELECTING AN EXISTING HOTSPOT ---
+          if (clickedObject.el && clickedObject.el.hasAttribute('editor-hotspot-marker')) {
+            if (this.state.mode === 'edit') {
+              const hotspotToSelect = clickedObject.el.hotspot;
+              const index = this.state.hotspots.indexOf(hotspotToSelect);
+              if (index > -1) {
+                this.selectHotspotForEditing(index);
+              }
+            }
+            return; // Don't create a new hotspot when clicking an existing one
+          }
+          
+          // --- LOGIC FOR ADDING A NEW HOTSPOT ---
+          if (this.state.mode !== 'add') return;
+          
+          const clickedMesh = intersection.object;
+          if (!clickedMesh || !clickedMesh.isMesh) return;
+          
+          console.log('Clicked on mesh:', clickedMesh.name);
+
+          // The intersection point from the A-Frame raycaster is already in the correct
+          // local coordinate space relative to the rotated model. No further conversion is needed.
+          console.log("1. World Intersection Point (from click):", JSON.parse(JSON.stringify(intersection.point)));
+          const localPosition = intersection.point;
+          console.log("2. Final Local Position (to be stored):", JSON.parse(JSON.stringify(localPosition)));
+          
+          const hotspot = {
+            id: `hotspot_${Date.now()}`,
+            type: "media",
+            label: `Hotspot ${this.state.hotspots.length + 1}`,
+            name: `Hotspot ${this.state.hotspots.length + 1}`,
+            parentName: clickedMesh.name,
+            visited: false,
+            requireVisit: false,
+            position: {
+              x: localPosition.x,
+              y: localPosition.y,
+              z: localPosition.z
+            },
+            details: {
+              targetTitle: `Hotspot ${this.state.hotspots.length + 1}`,
+              targetDesc: `Hotspot ${this.state.hotspots.length + 1} Description!`
+            },
+            color: this.getRandomColor(),
+            isOpen: false, // Property to track accordion state
+            marker: null // Will be assigned right after creation
+          };
+          
+          console.log('Adding hotspot:', hotspot);
+          this.state.hotspots.push(hotspot);
+          this.addHotspotMarker(hotspot);
+        });
+      },
+      
+      addHotspotMarker: function(hotspot, isWorldSpace = false) {
+        const modelEntity = this.el.sceneEl.querySelector('#loaded-model');
+        const sceneEl = this.el.sceneEl;
+
+        console.log("--- [DEBUG] Inside addHotspotMarker, received hotspot:", JSON.parse(JSON.stringify(hotspot)));
+        
+        if (!modelEntity) return;
+
+        // --- Create an A-Frame Entity, identical to the viewer ---
+        const markerEl = document.createElement('a-entity');
+        markerEl.setAttribute('geometry', { primitive: 'sphere', radius: 0.05 });
+        markerEl.setAttribute('material', { color: hotspot.color, shader: 'standard' });
+        markerEl.setAttribute('editor-hotspot-marker', ''); // Add marker for click detection
+        markerEl.hotspot = hotspot; // Attach a reference back to our state object
+
+        if (isWorldSpace) {
+          // This logic is for importing from JSON, which is not the primary case now.
+          // For now, we assume it's parented to the scene.
+          markerEl.setAttribute('position', hotspot.position);
+          sceneEl.appendChild(markerEl);
+        } else {
+          // For newly created, mesh-relative hotspots
+          let parentObject = modelEntity.object3D.getObjectByName(hotspot.parentName);
+          const hotspotContainer = sceneEl.querySelector('#hotspots-container');
+
+          if (parentObject && hotspotContainer) {
+              parentObject.add(markerEl.object3D); // Manual THREE.js parenting
+              markerEl.object3D.position.copy(hotspot.position);
+              // We must still append to an A-Frame entity for it to initialize correctly.
+              hotspotContainer.appendChild(markerEl);
+          }
+        }
+
+        hotspot.marker = markerEl; // Store the A-Frame entity
+      },
+      
+      removeHotspotMarker: function(hotspot) {
+        if (hotspot.marker && hotspot.marker.parentNode) {
+          hotspot.marker.parentNode.removeChild(hotspot.marker);
+        }
+        hotspot.marker = null;
+      },
+      
+      getRandomColor: function() {
+        // A "safe" palette that avoids pure Red, Green, and Blue.
+        const safeColors = ['#ff69b4', '#ffa500', '#ffeb3b', '#7cfc00', '#00ced1', '#9400d3', '#00fa9a', '#1e90ff'];
+        const usedColors = this.state.hotspots.map(h => h.color);
+        const availableColors = safeColors.filter(c => !usedColors.includes(c));
+
+        if (availableColors.length > 0) {
+          return availableColors[Math.floor(Math.random() * availableColors.length)];
+        }
+        
+        // If all safe colors are used, fall back to a purely random color.
+        return '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+      },
+      
+      render: function() {
+        // This is the main render loop that calls the sub-renderers
+        this.renderHotspotList();
+        this.renderMeshList();
+        this.renderGroupList();
+        this.renderModelPosition();
+        this.generateJsonData();
+      },
+
+      renderHotspotList: function() {
+        // Update hotspot count
+        document.getElementById('hotspot-count').textContent = this.state.hotspots.length;
+        
+        // Update mode display
+        document.getElementById('mode-display').textContent = 
+          this.state.mode === 'add' ? 'Add (click to place hotspots)' : 'Edit (clicking disabled)';
+        
+        // Render hotspot list
+        const container = document.getElementById('hotspot-list');
+        container.innerHTML = '';
+        
+        this.state.hotspots.forEach((hotspot, index) => {
+          const item = document.createElement('div');
+          item.className = 'hotspot-item';
+          if (hotspot === this.state.selectedHotspot) item.classList.add('selected');
+          if (hotspot.isOpen) item.classList.add('open');
+          
+          item.style.borderLeft = `4px solid ${hotspot.color}`;
+          
+          const header = document.createElement('div');
+          header.style.display = 'flex';
+          header.style.justifyContent = 'space-between';
+          header.style.width = '100%';
+          header.style.cursor = 'pointer';
+          header.onclick = () => this.onHotspotListItemClicked(index);
+
+          const nameSpan = document.createElement('span');
+          nameSpan.textContent = hotspot.name;
+
+          const deleteBtn = document.createElement('button');
+          deleteBtn.textContent = 'X';
+          deleteBtn.onclick = (e) => {
+            e.stopPropagation();
+            this.deleteHotspot(index);
+          };
+          
+          header.appendChild(nameSpan);
+          header.appendChild(deleteBtn);
+
+          const details = document.createElement('div');
+          details.className = 'hotspot-details';
+          const pos = hotspot.position;
+          details.innerHTML = `
+            <div class="coord-row">
+              <span class="coord-label">X</span>
+              <span class="coord-value">${pos.x.toFixed(3)}</span>
+            </div>
+            <div class="coord-row">
+              <span class="coord-label">Y</span>
+              <span class="coord-value">${pos.y.toFixed(3)}</span>
+            </div>
+            <div class="coord-row">
+              <span class="coord-label">Z</span>
+              <span class="coord-value">${pos.z.toFixed(3)}</span>
+            </div>
+          `;
+
+          item.appendChild(header);
+          item.appendChild(details);
+          container.appendChild(item);
+        });
+      },
+      
+      renderMeshList: function() {
+        // Update mesh count
+        document.getElementById('mesh-count').textContent = this.state.modelMeshes.length;
+        
+        // Update selected mesh count
+        document.getElementById('selected-mesh-count').textContent = this.state.selectedMeshes.length;
+        
+        // Render mesh list
+        const meshContainer = document.getElementById('mesh-list');
+        if (meshContainer) {
+          meshContainer.innerHTML = '';
+          this.state.modelMeshes.forEach((mesh, index) => {
+            const item = document.createElement('div');
+            item.className = 'mesh-item';
+            
+            // Check if mesh is selected (multi-select)
+            if (this.state.selectedMeshes.includes(mesh)) {
+              item.classList.add('selected');
+            }
+            
+            // Check if mesh is highlighted (single selection for visual feedback)
+            if (this.state.highlightedMesh === mesh) {
+              item.classList.add('highlighted');
+            }
+            
+            item.innerHTML = `<span>${mesh.name || `Mesh ${index}`}</span>`;
+            item.style.cursor = 'pointer';
+            item.onclick = (e) => this.handleMeshClick(mesh, e);
+            meshContainer.appendChild(item);
+          });
+        }
+      },
+      
+      handleMeshClick: function(mesh, event) {
+        const isCtrlPressed = event.ctrlKey || event.metaKey; // Support both Ctrl and Cmd (Mac)
+        
+        if (isCtrlPressed) {
+          // Multi-select mode: toggle selection
+          this.toggleMeshSelection(mesh);
+        } else {
+          // Single select mode: clear all selections and select only this mesh
+          this.selectSingleMesh(mesh);
+        }
+      },
+      
+      toggleMeshSelection: function(mesh) {
+        const index = this.state.selectedMeshes.indexOf(mesh);
+        
+        if (index > -1) {
+          // Remove from selection
+          this.state.selectedMeshes.splice(index, 1);
+          this.removeMeshHighlight(mesh);
+        } else {
+          // Add to selection
+          this.state.selectedMeshes.push(mesh);
+          this.addMeshHighlight(mesh);
+        }
+        
+        // Update UI
+        this.render();
+        console.log('Selected meshes:', this.state.selectedMeshes.map(m => m.name));
+      },
+      
+      selectSingleMesh: function(mesh) {
+        // Check if this mesh is already the only selected mesh
+        if (this.state.selectedMeshes.length === 1 && this.state.selectedMeshes[0] === mesh) {
+          // If it's already selected, deselect it
+          this.clearAllMeshSelections();
+          this.render();
+          console.log('Deselected single mesh:', mesh.name);
+          return;
+        }
+        
+        // Clear all previous selections
+        this.clearAllMeshSelections();
+        
+        // Select only this mesh
+        this.state.selectedMeshes = [mesh];
+        this.addMeshHighlight(mesh);
+        
+        // Update UI
+        this.render();
+        console.log('Selected single mesh:', mesh.name);
+      },
+      
+      clearAllMeshSelections: function() {
+        // Remove highlights from all previously selected meshes
+        this.state.selectedMeshes.forEach(mesh => {
+          this.removeMeshHighlight(mesh);
+        });
+        
+        // Clear the selection array
+        this.state.selectedMeshes = [];
+      },
+      
+      addMeshHighlight: function(mesh) {
+        if (mesh && mesh.material && mesh.material.emissive) {
+          mesh.material.emissive.setHex(0x007bff); // Blue glow for selected
+          mesh.material.emissiveIntensity = 0.3;
+        }
+      },
+      
+      removeMeshHighlight: function(mesh) {
+        if (mesh && mesh.material && mesh.material.emissive) {
+          mesh.material.emissive.setHex(0x000000);
+          mesh.material.emissiveIntensity = 0;
+        }
+      },
+      
+      highlightMesh: function(mesh) {
+        // Remove previous highlight (temporary visual feedback)
+        if (this.state.highlightedMesh && this.state.highlightedMesh.material && this.state.highlightedMesh.material.emissive) {
+          // Only remove highlight if the mesh is not in the selectedMeshes array
+          if (!this.state.selectedMeshes.includes(this.state.highlightedMesh)) {
+            this.state.highlightedMesh.material.emissive.setHex(0x000000);
+            this.state.highlightedMesh.material.emissiveIntensity = 0;
+          }
+        }
+        
+        // Remove previous debug line
+        if (this.state.debugLine) {
+          this.el.sceneEl.object3D.remove(this.state.debugLine);
+          this.state.debugLine = null;
+        }
+        
+        // Set new highlight (temporary visual feedback)
+        if (mesh && mesh !== this.state.highlightedMesh && mesh.material && mesh.material.emissive) {
+          this.state.highlightedMesh = mesh;
+          
+          // Only add yellow highlight if the mesh is not already selected (blue)
+          if (!this.state.selectedMeshes.includes(mesh)) {
+            mesh.material.emissive.setHex(0xffff00); // Yellow glow for temporary highlight
+            mesh.material.emissiveIntensity = 0.3;
+          }
+          
+          // Create debug line
+          this.createDebugLine(mesh);
+        } else if (mesh && mesh !== this.state.highlightedMesh) {
+          // If mesh doesn't have emissive material, just track it for UI highlighting
+          this.state.highlightedMesh = mesh;
+          console.warn('Mesh does not have emissive material, only UI highlighting applied:', mesh.name);
+          
+          // Create debug line even without emissive material
+          this.createDebugLine(mesh);
+        } else {
+          this.state.highlightedMesh = null;
+        }
+        
+        // Update UI
+        this.render();
+      },
+      
+      createDebugLine: function(mesh) {
+        const center = new THREE.Vector3();
+        
+        // Compute the bounding box of the mesh's geometry if it doesn't exist.
+        if (!mesh.geometry.boundingBox) {
+            mesh.geometry.computeBoundingBox();
+        }
+
+        // Get the center of the bounding box (which is in local coordinates).
+        mesh.geometry.boundingBox.getCenter(center);
+        
+        // Transform the local center point to world coordinates.
+        mesh.localToWorld(center);
+
+        const meshWorldPos = center; // This is the visual center in world space.
+        
+        // Target position (0, 2, 0)
+        const targetPos = new THREE.Vector3(0, 2, 0);
+        
+        // Create line geometry
+        const points = [meshWorldPos, targetPos];
+        const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+        
+        // Create line material
+        const lineMaterial = new THREE.LineBasicMaterial({ 
+          color: 0xffff00, // Yellow
+          linewidth: 2,
+          transparent: true,
+          opacity: 0.8
+        });
+        
+        // Create line object
+        const line = new THREE.Line(lineGeometry, lineMaterial);
+        
+        // Add to scene
+        this.el.sceneEl.object3D.add(line);
+        this.state.debugLine = line;
+        
+        console.log('Debug line created from mesh CENTER position:', meshWorldPos, 'to target:', targetPos);
+      },
+      
+      generateJsonData: function() {
+        const exportData = this.state.hotspots.map(hotspot => {
+          // Create a copy of the hotspot to avoid modifying the state directly
+          const hotspotToExport = { ...hotspot };
+
+          // Remove editor-specific transient properties before export
+          delete hotspotToExport.isOpen;
+          delete hotspotToExport.marker;
+          delete hotspotToExport.markerMesh; // For good measure
+
+          return hotspotToExport;
+        });
+
+        // Create enhanced parts structure from mesh groups
+        const partsData = this.state.meshGroups.reduce((acc, group) => {
+          acc[group.name] = {
+            name: group.name,
+            color: group.color,
+            meshes: group.meshes.map(mesh => mesh.name),
+            description: group.description || ""
+          };
+          return acc;
+        }, {});
+
+        // Combine hotspots and parts into a single export object
+        const combinedExport = {
+          hotspots: exportData,
+          parts: partsData,
+          modelPosition: this.state.modelPosition,
+          modelRotation: { x: 0, y: 0, z: 0 } // For future rotation support
+        };
+
+        const jsonDataArea = document.getElementById('json-data-area');
+        jsonDataArea.value = JSON.stringify(combinedExport, null, 2);
+      },
+      
+      onHotspotListItemClicked: function(index) {
+        const hotspot = this.state.hotspots[index];
+        hotspot.isOpen = !hotspot.isOpen;
+
+        if (this.state.mode === 'edit') {
+          // selectHotspotForEditing handles the re-render in this case
+          this.selectHotspotForEditing(index);
+        } else {
+          // If not in edit mode, we still need to render the accordion change
+          this.render();
+        }
+      },
+      
+      selectHotspotForEditing: function(index) {
+        if (this.state.mode !== 'edit') return;
+
+        const hotspot = this.state.hotspots[index];
+        if (hotspot && hotspot.marker) {
+          // Disable model position editing if active
+          if (this.state.modelPositionMode) {
+            this.toggleModelPositionMode();
+          }
+          
+          this.state.selectedHotspot = hotspot;
+          this.transformControls.attach(hotspot.marker.object3D);
+          this.transformControls.visible = true;
+          this.render(); // Update UI to show selection
+        }
+      },
+      
+      deleteHotspot: function(index) {
+        const hotspot = this.state.hotspots[index];
+
+        if (hotspot === this.state.selectedHotspot) {
+          this.transformControls.detach();
+          this.transformControls.visible = false;
+          this.state.selectedHotspot = null;
+        }
+
+        this.removeHotspotMarker(hotspot);
+        this.state.hotspots.splice(index, 1);
+        this.render();
+      },
+      
+      toggleMode: function() {
+        this.state.mode = this.state.mode === 'add' ? 'edit' : 'add';
+        document.getElementById('mode-button').textContent = 
+          this.state.mode === 'add' ? 'Switch to Edit Mode' : 'Switch to Add Mode';
+
+        // If switching to edit mode, disable model position editing to avoid conflicts
+        if (this.state.mode === 'edit' && this.state.modelPositionMode) {
+          this.toggleModelPositionMode();
+        }
+
+        // If switching out of edit mode, detach controls
+        if (this.state.mode === 'add') {
+          this.transformControls.detach();
+          this.transformControls.visible = false;
+          this.state.selectedHotspot = null;
+        }
+        this.render();
+      },
+      
+      toggleJsonPanel: function() {
+        const jsonPanel = document.querySelector('.json-panel');
+        if (jsonPanel) {
+          jsonPanel.style.display = jsonPanel.style.display === 'none' ? 'flex' : 'none';
+        }
+      },
+
+      onKeyDown: function(evt) {
+        if (evt.key.toLowerCase() === 'r') {
+          evt.preventDefault();
+          const cameraEl = this.el.sceneEl.camera.el;
+          // Reset to a known-good starting position
+          cameraEl.setAttribute('position', { x: 0, y: 1.5, z: 3 });
+          // Use look-controls component to face the origin
+          cameraEl.setAttribute('look-controls', 'enabled', false); // Temporarily disable to set rotation
+          cameraEl.object3D.lookAt(new THREE.Vector3(0, 0, 0));
+          // Manually update rotation attribute from the object3D
+          const newRotation = cameraEl.object3D.rotation;
+          cameraEl.setAttribute('rotation', {
+            x: THREE.MathUtils.radToDeg(newRotation.x),
+            y: THREE.MathUtils.radToDeg(newRotation.y),
+            z: THREE.MathUtils.radToDeg(newRotation.z)
+          });
+          cameraEl.setAttribute('look-controls', 'enabled', true);
+        }
+      },
+
+      importFromJson: function() {
+        const textarea = document.getElementById('json-data-area');
+        const text = textarea.value.trim();
+        let newData;
+        
+        try {
+          newData = JSON.parse(text);
+        } catch (e) {
+          // If parsing fails, it might be because the user pasted a comma-separated
+          // list of objects without the surrounding []. Let's try to fix it.
+          try {
+            newData = JSON.parse(`[${text}]`);
+          } catch (e2) {
+            alert('Invalid JSON format. Please provide an array of hotspot objects or a single hotspot object.');
+            return;
+          }
+        }
+
+        // Clear all current hotspots and groups before importing
+        while (this.state.hotspots.length > 0) {
+            this.deleteHotspot(0);
+        }
+        this.state.meshGroups = [];
+
+        // Handle different import formats
+        if (newData.hotspots && newData.parts) {
+          // New combined format with hotspots and parts
+          console.log('Importing combined format with hotspots and parts');
+          
+          // Import model position if available
+          if (newData.modelPosition) {
+            this.state.modelPosition = newData.modelPosition;
+            this.updateModelPosition();
+            console.log('Imported model position:', this.state.modelPosition);
+          }
+          
+          // Import hotspots
+          newData.hotspots.forEach(hotspotData => {
+            if (hotspotData.parentName && hotspotData.position) {
+              const hotspot = {
+                ...hotspotData,
+                position: hotspotData.position,
+                isOpen: false,
+                marker: null
+              };
+              this.state.hotspots.push(hotspot);
+              this.addHotspotMarker(hotspot, true);
+            } else {
+              console.warn('Skipping invalid hotspot data object:', hotspotData);
+            }
+          });
+          
+          // Import parts as mesh groups
+          Object.entries(newData.parts).forEach(([groupName, partData]) => {
+            const group = {
+              id: `group_${Date.now()}_${Math.random()}`,
+              name: groupName,
+              color: partData.color || this.getRandomGroupColor(),
+              meshes: [],
+              description: partData.description || "",
+              selected: false
+            };
+            
+            // Find meshes by name and add to group
+            if (partData.meshes && Array.isArray(partData.meshes)) {
+              partData.meshes.forEach(meshName => {
+                const mesh = this.state.modelMeshes.find(m => m.name === meshName);
+                if (mesh) {
+                  group.meshes.push(mesh);
+                  this.addGroupHighlight(mesh, group.color);
+                } else {
+                  console.warn(`Could not find mesh "${meshName}" for group "${groupName}"`);
+                }
+              });
+            }
+            
+            if (group.meshes.length > 0) {
+              this.state.meshGroups.push(group);
+            }
+          });
+          
+        } else if (Array.isArray(newData)) {
+          // Old format: array of hotspots only
+          console.log('Importing legacy hotspot-only format');
+          
+          newData.forEach(hotspotData => {
+            if (hotspotData.parentName && hotspotData.position) {
+              const hotspot = {
+                ...hotspotData,
+                position: hotspotData.position,
+                isOpen: false,
+                marker: null
+              };
+              this.state.hotspots.push(hotspot);
+              this.addHotspotMarker(hotspot, true);
+            } else {
+              console.warn('Skipping invalid hotspot data object:', hotspotData);
+            }
+          });
+        } else if (newData.parentName && newData.position) {
+          // Single hotspot object
+          console.log('Importing single hotspot object');
+          
+          const hotspot = {
+            ...newData,
+            position: newData.position,
+            isOpen: false,
+            marker: null
+          };
+          this.state.hotspots.push(hotspot);
+          this.addHotspotMarker(hotspot, true);
+        } else {
+          alert('Unsupported JSON format. Please provide hotspots array or combined format with hotspots and parts.');
+          return;
+        }
+
+        // Re-render the UI with the new state
+        this.render();
+      },
+
+      addHotspotAt: function(intersection) {
+        if (!intersection) return;
+        const clickedMesh = intersection.object;
+        if (!clickedMesh) return;
+
+        const parentName = clickedMesh.name;
+        const parentObject = this.el.sceneEl.object3D.getObjectByName(parentName);
+
+        if (!parentObject) {
+          console.error(`[EDITOR] Could not find parent object with name: ${parentName}`);
+          return;
+        }
+
+        // Convert world intersection point to local coordinates of the clicked mesh
+        const localPosition = new THREE.Vector3();
+        parentObject.worldToLocal(localPosition.copy(intersection.point));
+
+        const newHotspot = {
+          name: `Hotspot ${this.state.hotspots.length + 1}`,
+          parentName: parentName,
+          position: { x: localPosition.x, y: localPosition.y, z: localPosition.z },
+          color: this.getRandomColor(),
+          isOpen: false,
+          marker: null // Will be assigned right after creation
+        };
+
+        console.log(`Adding hotspot:`, JSON.parse(JSON.stringify(newHotspot)));
+        this.state.hotspots.push(newHotspot);
+
+        // --- IMMEDIATE MARKER CREATION ---
+        // Create the marker entity immediately to ensure it exists before any render/JSON generation.
+        const markerEl = document.createElement('a-entity');
+        markerEl.setAttribute('geometry', { primitive: 'sphere', radius: 0.05 });
+        markerEl.setAttribute('material', { color: newHotspot.color, shader: 'standard' });
+        markerEl.setAttribute('dynamic-scaler', '');
+        markerEl.object3D.position.copy(localPosition);
+        
+        // Find the A-Frame entity for the parent mesh and append the marker
+        const parentEl = clickedMesh.el;
+        if (parentEl) {
+            parentEl.appendChild(markerEl);
+            newHotspot.marker = markerEl; // Assign the created marker to our hotspot object
+        } else {
+            console.error("Could not find parent A-Frame element to attach hotspot marker.");
+        }
+        // --- END IMMEDIATE MARKER CREATION ---
+
+        this.render();
+        this.el.emit('hotspotsupdated');
+      },
+      
+      // ===== GROUP MANAGEMENT FUNCTIONS =====
+      
+      createGroupFromSelection: function() {
+        if (this.state.selectedMeshes.length === 0) {
+          alert('Please select at least one mesh to create a group.');
+          return;
+        }
+        
+        const groupName = prompt('Enter group name:', `Group ${this.state.meshGroups.length + 1}`);
+        if (!groupName) return;
+        
+        const groupColor = this.getRandomGroupColor();
+        
+        const newGroup = {
+          id: `group_${Date.now()}`,
+          name: groupName,
+          color: groupColor,
+          meshes: [...this.state.selectedMeshes], // Copy the array
+          description: prompt('Enter group description (optional):', '') || ''
+        };
+        
+        this.state.meshGroups.push(newGroup);
+        
+        // Add group highlighting to all meshes in the group
+        newGroup.meshes.forEach(mesh => {
+          this.addGroupHighlight(mesh, groupColor);
+        });
+        
+        // Clear individual mesh selections
+        this.clearAllMeshSelections();
+        
+        this.render();
+        console.log('Created group:', newGroup);
+      },
+      
+      deleteSelectedGroup: function() {
+        const selectedGroup = this.state.meshGroups.find(group => group.selected);
+        if (!selectedGroup) {
+          alert('Please select a group to delete.');
+          return;
+        }
+        
+        if (!confirm(`Are you sure you want to delete group "${selectedGroup.name}"?`)) {
+          return;
+        }
+        
+        // Remove group highlighting from all meshes
+        selectedGroup.meshes.forEach(mesh => {
+          this.removeGroupHighlight(mesh);
+        });
+        
+        // Remove group from array
+        const index = this.state.meshGroups.indexOf(selectedGroup);
+        this.state.meshGroups.splice(index, 1);
+        
+        this.render();
+        console.log('Deleted group:', selectedGroup.name);
+      },
+      
+      selectGroup: function(group) {
+        // Clear previous group selection
+        this.state.meshGroups.forEach(g => g.selected = false);
+        
+        // Select this group
+        group.selected = true;
+        
+        // Highlight all meshes in the group
+        this.clearAllMeshSelections();
+        group.meshes.forEach(mesh => {
+          this.state.selectedMeshes.push(mesh);
+          this.addGroupHighlight(mesh, group.color);
+        });
+        
+        this.render();
+        console.log('Selected group:', group.name);
+      },
+      
+      addMeshToGroup: function(mesh, group) {
+        if (group.meshes.includes(mesh)) {
+          console.warn('Mesh already in group:', mesh.name);
+          return;
+        }
+        
+        group.meshes.push(mesh);
+        this.addGroupHighlight(mesh, group.color);
+        this.render();
+        console.log('Added mesh to group:', mesh.name, '->', group.name);
+      },
+      
+      removeMeshFromGroup: function(mesh, group) {
+        const index = group.meshes.indexOf(mesh);
+        if (index > -1) {
+          group.meshes.splice(index, 1);
+          this.removeGroupHighlight(mesh);
+          this.render();
+          console.log('Removed mesh from group:', mesh.name, '<-', group.name);
+        }
+      },
+      
+      addGroupHighlight: function(mesh, color) {
+        if (mesh && mesh.material && mesh.material.emissive) {
+          // Convert hex color to number
+          const colorNum = parseInt(color.replace('#', ''), 16);
+          mesh.material.emissive.setHex(colorNum);
+          mesh.material.emissiveIntensity = 0.3;
+        }
+      },
+      
+      removeGroupHighlight: function(mesh) {
+        if (mesh && mesh.material && mesh.material.emissive) {
+          mesh.material.emissive.setHex(0x000000);
+          mesh.material.emissiveIntensity = 0;
+        }
+      },
+      
+      getRandomGroupColor: function() {
+        const groupColors = [
+          '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57',
+          '#ff9ff3', '#54a0ff', '#5f27cd', '#00d2d3', '#ff9f43'
+        ];
+        
+        const usedColors = this.state.meshGroups.map(g => g.color);
+        const availableColors = groupColors.filter(c => !usedColors.includes(c));
+        
+        if (availableColors.length > 0) {
+          return availableColors[Math.floor(Math.random() * availableColors.length)];
+        }
+        
+        // If all colors are used, generate a random one
+        return '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+      },
+      
+      renderGroupList: function() {
+        // Update group count
+        document.getElementById('group-count').textContent = this.state.meshGroups.length;
+        
+        // Update button states
+        const createBtn = document.getElementById('create-group-btn');
+        const deleteBtn = document.getElementById('delete-group-btn');
+        
+        createBtn.disabled = this.state.selectedMeshes.length === 0;
+        deleteBtn.disabled = !this.state.meshGroups.some(g => g.selected);
+        
+        // Render group list
+        const groupContainer = document.getElementById('group-list');
+        if (groupContainer) {
+          groupContainer.innerHTML = '';
+          
+          this.state.meshGroups.forEach((group, index) => {
+            const item = document.createElement('div');
+            item.className = 'group-item';
+            if (group.selected) item.classList.add('selected');
+            
+            item.style.borderLeft = `4px solid ${group.color}`;
+            
+            const header = document.createElement('div');
+            header.className = 'group-header';
+            header.innerHTML = `
+              <span style="font-weight: bold;">${group.name}</span>
+              <span style="font-size: 10px; color: #aaa;">${group.meshes.length} meshes</span>
+            `;
+            
+            const meshList = document.createElement('div');
+            meshList.className = 'group-mesh-list';
+            group.meshes.forEach(mesh => {
+              const meshItem = document.createElement('div');
+              meshItem.className = 'group-mesh-item';
+              meshItem.textContent = `• ${mesh.name || 'Unnamed Mesh'}`;
+              meshList.appendChild(meshItem);
+            });
+            
+            item.appendChild(header);
+            item.appendChild(meshList);
+            
+            item.onclick = () => this.selectGroup(group);
+            groupContainer.appendChild(item);
+          });
+        }
+      },
+      
+      // ===== MODEL POSITION MANAGEMENT FUNCTIONS =====
+      
+      toggleModelPositionMode: function() {
+        this.state.modelPositionMode = !this.state.modelPositionMode;
+        const toggleBtn = document.getElementById('model-position-toggle');
+        
+        if (this.state.modelPositionMode) {
+          toggleBtn.textContent = 'Disable Position Edit';
+          toggleBtn.classList.add('active');
+          this.enableModelPositionGizmo();
+        } else {
+          toggleBtn.textContent = 'Enable Position Edit';
+          toggleBtn.classList.remove('active');
+          this.disableModelPositionGizmo();
+        }
+      },
+      
+      enableModelPositionGizmo: function() {
+        const modelEntity = this.el.sceneEl.querySelector('#loaded-model');
+        if (!modelEntity) {
+          console.warn('No model loaded for position editing');
+          return;
+        }
+        
+        // Create a gizmo entity at the model's position
+        const gizmoEl = document.createElement('a-entity');
+        gizmoEl.setAttribute('geometry', { primitive: 'sphere', radius: 0.1 });
+        gizmoEl.setAttribute('material', { color: '#28a745', shader: 'standard' });
+        gizmoEl.setAttribute('position', this.state.modelPosition);
+        gizmoEl.setAttribute('id', 'model-position-gizmo');
+        gizmoEl.setAttribute('model-position-gizmo', '');
+        
+        // Add to scene
+        this.el.sceneEl.appendChild(gizmoEl);
+        this.state.modelPositionGizmo = gizmoEl;
+        
+        // Attach transform controls to the gizmo
+        this.transformControls.attach(gizmoEl.object3D);
+        this.transformControls.visible = true;
+        
+        // Listen for position changes
+        this.transformControls.addEventListener('objectChange', () => {
+          if (this.state.modelPositionGizmo) {
+            const newPos = this.state.modelPositionGizmo.object3D.position;
+            this.state.modelPosition.x = newPos.x;
+            this.state.modelPosition.y = newPos.y;
+            this.state.modelPosition.z = newPos.z;
+            this.updateModelPosition();
+            this.updatePositionInputs();
+          }
+        });
+        
+        console.log('Model position gizmo enabled');
+      },
+      
+      disableModelPositionGizmo: function() {
+        if (this.state.modelPositionGizmo) {
+          this.transformControls.detach();
+          this.transformControls.visible = false;
+          
+          // Remove gizmo from scene
+          if (this.state.modelPositionGizmo.parentNode) {
+            this.state.modelPositionGizmo.parentNode.removeChild(this.state.modelPositionGizmo);
+          }
+          this.state.modelPositionGizmo = null;
+        }
+      },
+      
+      updateModelPosition: function() {
+        const modelEntity = this.el.sceneEl.querySelector('#loaded-model');
+        if (modelEntity) {
+          modelEntity.setAttribute('position', this.state.modelPosition);
+          console.log('Model position updated:', this.state.modelPosition);
+        }
+      },
+      
+      updatePositionInputs: function() {
+        document.getElementById('model-pos-x').value = this.state.modelPosition.x.toFixed(3);
+        document.getElementById('model-pos-y').value = this.state.modelPosition.y.toFixed(3);
+        document.getElementById('model-pos-z').value = this.state.modelPosition.z.toFixed(3);
+      },
+      
+      updateModelPositionFromInput: function() {
+        const x = parseFloat(document.getElementById('model-pos-x').value) || 0;
+        const y = parseFloat(document.getElementById('model-pos-y').value) || 0;
+        const z = parseFloat(document.getElementById('model-pos-z').value) || 0;
+        
+        this.state.modelPosition = { x, y, z };
+        this.updateModelPosition();
+        
+        // Update gizmo position if active
+        if (this.state.modelPositionGizmo) {
+          this.state.modelPositionGizmo.setAttribute('position', this.state.modelPosition);
+        }
+      },
+      
+      resetModelPosition: function() {
+        this.state.modelPosition = { x: 0, y: 0, z: 0 };
+        this.updateModelPosition();
+        this.updatePositionInputs();
+        
+        // Update gizmo position if active
+        if (this.state.modelPositionGizmo) {
+          this.state.modelPositionGizmo.setAttribute('position', this.state.modelPosition);
+        }
+        
+        console.log('Model position reset to origin');
+      },
+      
+      renderModelPosition: function() {
+        // Update position inputs
+        this.updatePositionInputs();
+        
+        // Update button state
+        const toggleBtn = document.getElementById('model-position-toggle');
+        if (this.state.modelPositionMode) {
+          toggleBtn.textContent = 'Disable Position Edit';
+          toggleBtn.classList.add('active');
+        } else {
+          toggleBtn.textContent = 'Enable Position Edit';
+          toggleBtn.classList.remove('active');
+        }
+        
+        // Update grid button text
+        const gridBtn = document.getElementById('toggle-grid-button');
+        if (gridBtn) {
+          gridBtn.textContent = this.state.gridVisible ? 'Hide Grid' : 'Show Grid';
+        }
+      },
+      
+      toggleGrid: function() {
+        this.state.gridVisible = !this.state.gridVisible;
+        const gridEntity = this.el.sceneEl.querySelector('#environment-grid');
+        const toggleBtn = document.getElementById('toggle-grid-button');
+        
+        if (gridEntity) {
+          gridEntity.setAttribute('visible', this.state.gridVisible);
+        }
+        
+        toggleBtn.textContent = this.state.gridVisible ? 'Hide Grid' : 'Show Grid';
+        console.log('Grid visibility toggled:', this.state.gridVisible);
+      },
+
+      setCameraView: function(evt) {
+        const view = evt.detail.view;
+        const cameraEl = this.el.sceneEl.camera.el;
+        
+        // Use a fixed distance for consistent views
+        const distance = 5; 
+        
+        const views = {
+          front:  { position: new THREE.Vector3(0, 1.6, distance) },
+          back:   { position: new THREE.Vector3(0, 1.6, -distance) },
+          left:   { position: new THREE.Vector3(-distance, 1.6, 0) },
+          right:  { position: new THREE.Vector3(distance, 1.6, 0) },
+          top:    { position: new THREE.Vector3(0, 1.6 + distance, 0) },
+          bottom: { position: new THREE.Vector3(0, 1.6 - distance, 0) }
+        };
+
+        const targetView = views[view];
+        if (!targetView) return;
+
+        // Temporarily disable look-controls to avoid conflicts
+        cameraEl.setAttribute('look-controls', 'enabled', false);
+
+        // Animate camera to the target position
+        const cameraPosition = new THREE.Vector3();
+        cameraEl.object3D.getWorldPosition(cameraPosition);
+
+        // Use a simple animation loop
+        const start = { x: cameraPosition.x, y: cameraPosition.y, z: cameraPosition.z };
+        const end = targetView.position;
+        const duration = 500; // ms
+        let startTime = null;
+
+        const animate = (time) => {
+          if (!startTime) startTime = time;
+          const elapsed = time - startTime;
+          const t = Math.min(elapsed / duration, 1);
+          
+          const newPos = new THREE.Vector3().lerpVectors(new THREE.Vector3(start.x, start.y, start.z), end, t);
+          cameraEl.object3D.position.copy(newPos);
+          cameraEl.object3D.lookAt(new THREE.Vector3(0, 1.6, 0)); // Look at the center
+
+          if (t < 1) {
+            requestAnimationFrame(animate);
+          } else {
+            // Ensure final state is set
+            cameraEl.object3D.position.copy(end);
+            cameraEl.object3D.lookAt(new THREE.Vector3(0, 1.6, 0));
+            // Update rotation attribute for look-controls
+            const newRotation = cameraEl.object3D.rotation;
+            cameraEl.setAttribute('rotation', {
+              x: THREE.MathUtils.radToDeg(newRotation.x),
+              y: THREE.MathUtils.radToDeg(newRotation.y),
+              z: THREE.MathUtils.radToDeg(newRotation.z)
+            });
+
+            // Re-enable look-controls after the animation
+            cameraEl.setAttribute('look-controls', 'enabled', true);
+          }
+        };
+
+        requestAnimationFrame(animate);
+        console.log(`Animating camera to ${view} view`);
+      }
+    });
+
+    AFRAME.registerComponent('dynamic-scaler', {
+        init: function () { this.camera = this.el.sceneEl.camera; },
+        tick: function () {
+            if (!this.camera) return;
+            const distance = this.el.object3D.getWorldPosition(new THREE.Vector3()).distanceTo(this.camera.position);
+            const scale = distance * 0.025;
+            this.el.object3D.scale.set(scale, scale, scale);
+        }
+    });
+
+    AFRAME.registerComponent('dynamic-origin-scaler', {
+      schema: {
+        baseScale: {type: 'number', default: 0.2},
+        maxScaleFactor: {type: 'number', default: 2.0},
+        minScaleFactor: {type: 'number', default: 0.1}
+      },
+
+      init: function () {
+        this.camera = this.el.sceneEl.camera;
+        this.initialRadius = this.el.getAttribute('geometry').radius;
+        
+        // Create a throttled version of the scaling function
+        this.throttledScale = window.throttle(this.performScaling.bind(this), 1000);
+      },
+
+      tick: function () {
+        if (!this.camera) return;
+        
+        // Call the throttled scaling function
+        this.throttledScale();
+      },
+      
+      performScaling: function() {
+        const cameraPos = this.camera.el.object3D.getWorldPosition(new THREE.Vector3());
+        const spherePos = this.el.object3D.getWorldPosition(new THREE.Vector3());
+        const distance = spherePos.distanceTo(cameraPos);
+        
+        // Use the base scale from the component's data
+        const rawScale = distance * this.data.baseScale;
+        
+        const minScale = this.initialRadius * this.data.minScaleFactor;
+        const maxScale = this.initialRadius * this.data.maxScaleFactor;
+
+        const clampedScale = THREE.MathUtils.clamp(rawScale, minScale, maxScale);
+        
+        this.el.object3D.scale.set(clampedScale, clampedScale, clampedScale);
+      }
+    });
+
+    AFRAME.registerComponent('multi-color-box', {
+      init: function () {
+        const applyMaterials = (mesh) => {
+          if (!mesh) return;
+          const materials = [
+            new THREE.MeshStandardMaterial({color: '#ff4136'}), // Right (+x) - Red
+            new THREE.MeshStandardMaterial({color: '#2ecc40'}), // Left (-x) - Green
+            new THREE.MeshStandardMaterial({color: '#0074d9'}), // Top (+y) - Blue
+            new THREE.MeshStandardMaterial({color: '#ffdc00'}), // Bottom (-y) - Yellow
+            new THREE.MeshStandardMaterial({color: '#7fdbff'}), // Front (+z) - Aqua
+            new THREE.MeshStandardMaterial({color: '#b10dc9'})  // Back (-z) - Purple
+          ];
+          mesh.material = materials;
+        };
+
+        const mesh = this.el.getObject3D('mesh');
+        if (mesh) {
+          applyMaterials(mesh);
+        } else {
+          this.el.addEventListener('object3dset', (evt) => {
+            if (evt.detail.type === 'mesh') {
+              applyMaterials(this.el.getObject3D('mesh'));
+            }
+          });
+        }
+      }
+    });
+  </script>
+</body>
+</html> 

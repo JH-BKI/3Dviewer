@@ -4,18 +4,17 @@
     <meta charset="utf-8" />
     <title>3D Model Viewer</title>
     <!-- first, run the loading screen -->
-    <script src="./core/js/components/ui/loader-initial.js"></script>
-    <script>
-      window.fadeInLoadingScreen();
-    </script>
+    <script src="./core/js/components/ui/loader-initial.js"></script><script>window.fadeInLoadingScreen();</script>
+
     <script src="./core/js/pkg/globalUtils.js"></script>
     <script src="./core/js/pkg/aframe.min.js"></script> <!-- https://aframe.io/releases/1.7.0/aframe.min.js -->
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.5.4/dist/aframe-extras.min.js"></script>
     <script src="https://unpkg.com/aframe-environment-component@1.5.x/dist/aframe-environment-component.min.js"></script>
     <script src="./core/js/pkg/aframe-orbit-controls.min.js"></script> <!-- https://unpkg.com/aframe-orbit-controls@1.3.2/dist/aframe-orbit-controls.min.js -->
+    <script src="https://unpkg.com/aframe-troika-text/dist/aframe-troika-text.min.js"></script>
+
     <script src="./core/js/debug.js"></script>
     <script src="./core/js/components/camera-utils.js"></script>
-
     <script src="./core/js/components/onboarding-guide.js"></script>
     <script src="./core/js/components/ui-overlay.js"></script>
     <script src="./core/js/components/zoom-ui.js"></script>
@@ -25,6 +24,7 @@
     <script src="./core/js/components/ui/button-simple.js"></script>
     <script src="./core/js/components/ui/button-toggle.js"></script>
     <script src="./core/js/components/ui/modal-dialog.js"></script>
+    
     <script src="./core/js/components/spatial-hotspot.js"></script>
     <script src="./core/js/components/billboard.js"></script>
     <script src="./core/js/components/mobile-console.js"></script>
@@ -39,39 +39,17 @@
     <link href="https://cdn.jsdelivr.net/npm/modern-normalize@3.0.1/modern-normalize.min.css" rel="stylesheet">
     <!-- <link rel="stylesheet" href="./core/css/pkg/bulma.min.css">
      <!-- https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css -->
-    <link rel="stylesheet" href="./core/css/pkg/balloon.css"> <!-- https://cdn.jsdelivr.net/npm/bulma-tooltip@2.0.2/dist/css/bulma-tooltip.min.css -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"> <!-- https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css -->
-    <link rel="stylesheet" href="./core/css/styles.css">
-    <link rel="stylesheet" href="./core/css/xrs_styles.css">
+     <!-- <link rel="stylesheet" href="./core/css/styles.css"> -->
+     
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"> <!-- https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css -->
+     <link rel="stylesheet" href="./core/css/xrs_theme.css">
+     <link rel="stylesheet" href="./core/css/xrs_styles.css">
+     <link rel="stylesheet" href="./core/css/pkg/balloon.css"> <!-- https://cdn.jsdelivr.net/npm/bulma-tooltip@2.0.2/dist/css/bulma-tooltip.min.css -->
     
   </head>
-<body class="has-navbar-fixed-bottom">
-    <script>
-        function DeviceActivate() {           
-            const expandIcon = document.querySelector('.fa-expand');
-            const compressIcon = document.querySelector('.fa-compress');
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen();
-                expandIcon.style.display = 'none';
-                compressIcon.style.display = 'inline-block';
-            } else {
-                document.exitFullscreen();
-                expandIcon.style.display = 'inline-block';
-                compressIcon.style.display = 'none';
-            }
-        }
-
- 
-    </script>
-  </head>
-  
   <body>
-
-
-
- 
+     
       <div class="ui-container" > 
-
         <div class="buttons-container">
           <button class="button is-medium is-link overlay-buttons" data-balloon-pos="right" aria-label="Model selection" id="general-info-toggle">
           <i class="fa-solid fa-cube fa-beat" aria-hidden="true" style="--fa-animation-duration: 2s; --fa-beat-scale: 1.2;"></i>
@@ -88,157 +66,8 @@
 
           <div id="zoomDisplay" class="box" role="status" aria-live="polite">
             <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><BR><span id="zoomValue">0%</span>
-          </div>
-		  
-                <div animation-controls></div>
-
-                
-
-        </div>
-
-
-        <div class="instructions-container">
-          <div class="modal is-active">
-            <div class="modal-background"></div>
-            <div class="modal-card">
-              <header class="modal-card-head">
-                <p class="modal-card-title"><i class="fa-solid fa-cube"></i>&nbsp;How to use this 3D viewer</p>
-              </header>
-              <section class="modal-card-body">
-                  <div class="block">
-                      <p>This experience is compatible with desktop/laptop devices with a mouse/keyboard and mobile/tablet devices using the touchscreen.</p>
-                  </div>
-                  <div class="column">                        
-                      <figure class="image is-16by9">
-                          <img src="./assets/images/basic-controls.gif" alt="basic controls demonstration">
-                      </figure>
-                  </div>
-                  <div class="columns is-desktop">
-                      <div class="column">
-                          <div class="block">
-                              <h5 class="is-size-5">Rotate/move 3D model:</h5>
-                              <ul>
-                                  <li><u>Mouse:</u> Hold down left mouse button and drag</li>
-                                  <li><u>Touchscreen:</u> Touch and drag with your finger</li>
-                              </ul>
-                          </div>
-                      </div>
-                      <div class="column">
-                          <div class="block">
-                              <h5 class="is-size-5">Zoom in/out:</h5>
-                              <ul>
-                                  <li><u>Mouse:</u> Scroll up/down with the middle mousewheel</li>
-                                  <li><u>Touchscreen:</u> Pinch in/out with your fingers</li>
-                              </ul>
-                          </div>
-                      </div>                        
-                  </div>
-             
-              </section>
-              <footer class="modal-card-foot">
-                <div class="buttons">
-                  <button class="button is-medium is-link shared-with-icon">Continue&nbsp;<i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
-                </div>
-              </footer>
-            </div>
-          </div>  
-        </div>
-
-        <div class="model-selector-container">
-          <div class="modal is-active">
-            <div class="modal-background"></div>
-            <div class="modal-card">
-              <header class="modal-card-head">
-                <p class="modal-card-title"><i class="fa-solid fa-cube"></i>&nbsp;Choose a 3D model</p>
-              </header>
-              <section class="modal-card-body">
-                  <div class="block">
-                    <p>Select an item below to explore it in the 3D viewer:</p>
-                </div>
-                  <div class="model-selector-panel">
-                      <div class="column">
-                        <button class="button model-selector-button is-link is-light" data-model="colgatebox">
-                            <div style="background-image: url('./assets/images/colgate-box.jpg');"></div>
-                            <div>
-                              <h4 class="is-size-4">Colgate Box</h4>
-                            </div>
-                          </button>
-                        </div>
-                      <div class="column">
-                        <button class="button model-selector-button is-link is-light" data-model="tubebox">
-                          <div style="background-image: url('./assets/images/duraphat-box.jpg');"></div>
-                          <div>
-                            <h4 class="is-size-4">Duraphat Box</h4>
-                          </div>
-                        </button>
-                        </div>
-                      <div class="column">
-                        <button class="button model-selector-button is-link is-light" data-model="tube">
-                          <div style="background-image: url('./assets/images/duraphat-tube.jpg');"></div>
-                          <div>
-                            <h4 class="is-size-4">Duraphat Tube</h4>
-                          </div>
-                      </button>
-                      </div>
-                      <div class="column">
-                        <button class="button model-selector-button is-link is-light" data-model="singledose">  
-                          <div style="background-image: url('./assets/images/single-dose.jpg');"></div>
-                          <div>
-                            <h4 class="is-size-4">Duraphat Single Dose</h4>
-                          </div>
-                        </button>
-                      </div>
-                      <div class="column">
-                        <button class="button model-selector-button is-link is-light" data-model="triceraptops">
-                            <div></div>
-                            <div>
-                              <h4 class="is-size-4">Triceraptops</h4>
-                            </div>
-                          </button>
-                        </div>
-                      <div class="column">
-                        <button class="button model-selector-button is-link is-light" data-model="frog">
-                          <div></div>
-                          <div>
-                            <h4 class="is-size-4">Frog</h4>
-                          </div>
-                        </button>
-                        </div>
-                      <div class="column">
-                        <button class="button model-selector-button is-link is-light" data-model="oxxo">
-                          <div></div>
-                          <div>
-                            <h4 class="is-size-4">oxxo</h4>
-                          </div>
-                      </button>
-                      </div>
-                      <div class="column">
-                        <button class="button model-selector-button is-link is-light" data-model="kitchen">  
-                          <div></div>
-                          <div>
-                            <h4 class="is-size-4">kitchen</h4>
-                          </div>
-                        </button>
-                      </div>     
-                     <div class="column">
-                        <button class="button model-selector-button is-link is-light" data-model="greenhouse">  
-                          <div></div>
-                          <div>
-                            <h4 class="is-size-4">greenhouse</h4>
-                          </div>
-                        </button>
-                      </div>  					  
-                  </div>
-                
-              </section>
-              <footer class="modal-card-foot">
-                <div class="buttons">
-                  <button class="button is-medium is-link shared-with-icon" id="cancel-model-selector-button">Cancel &nbsp;<i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
-                </div>
-              </footer>
-            </div>
-          </div>  
-        </div>
+          </div>		                
+        </div>    
       </div> 
 
 
@@ -272,10 +101,9 @@
           <a-light type="directional" color="#fff" intensity="1.5" position="0 4 3.3"></a-light>
           
           
-          <!-- <a-entity gltf-model="./assets/3d/colgateboxcomplete.glb" position="0 0 0" scale="1 1 1"></a-entity>                  -->
           
           <a-entity id="camera" camera look-controls="enabled: false" 
-              orbit-controls="
+          orbit-controls="
                   target: 0 0 0;           
                   autoRotate: true;
                   autoRotateSpeed: 0.1;
@@ -290,13 +118,12 @@
                   dampingFactor: 0.1;
                   enableRotate: true;
                   enableZoom: true;"
-              onboarding-guide="
+                  onboarding-guide="
                   message: 'Click/touch and<BR>swipe to explore';
-                  imageUrl: './assets/images/onboarding-rotate.gif';">
-          </a-entity>
+                    imageUrl: './assets/images/onboarding-rotate.gif';">
+                  </a-entity>
           
-
-
+    
 
         <div class="xrs_uicontainer">
           <nav class="xrs_navbar" role="navigation" aria-label="dropdown navigation">
@@ -324,8 +151,9 @@
   </html>
 
 <script>
-
-
+// run the device info, add data attribute to body tag
+  //window.applyDeviceInfoToBody();
+  window.addEventListener('resize', debounce(window.applyDeviceInfoToBody, 250));
 
 
 
@@ -337,16 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.cameraUtils.setUnlimitedAzimuthalRotation();
   }
 
-  // Set up cancel button click handler
-  const cancelButton = document.getElementById('cancel-model-selector-button');
-  if (cancelButton) {
-    cancelButton.addEventListener('click', () => {
-      const selectorContainer = document.querySelector('.model-selector-container');
-      if (selectorContainer) {
-        selectorContainer.style.display = 'none';
-      }
-    });
-  }
+ 
 
   // Add reset button handler (ensure the button has id="reset-camera")
   const resetBtn = document.getElementById('reset-camera');
@@ -530,99 +349,6 @@ function updateInitialPosition(vectorStr) {
   orbitComponent.controls.update();
 }
 
-
-
-
-// document.getElementById("animationDropdown").addEventListener("change", (event) => {
-//     const selectedAnimation = event.target.value;
-// 	animationStatusValues["currentAnimation"] = selectedAnimation;
-// 	SetAnimProp("clip", animationStatusValues["currentAnimation"]);
-// 	SetPlayHighlights(document.getElementById("animationPlay"));
-// });
-
-// document.getElementById("animationPlay").addEventListener("click", (event) => {
-//     SetAnimProp("timeScale",animationStatusValues["currentSpeed"]);
-// 		SetAnimProp("clip", animationStatusValues["currentAnimation"]);
-// 	SetPlayHighlights(document.getElementById("animationPlay"));
-// 	const entity = document.getElementById("3D-object");
-// 	 var mixer = entity.components["animation-mixer"];
-// 		mixer.playAction(mixer.activeAction); // Restart the animation
-// });
-// document.getElementById("animationPause").addEventListener("click", (event) => {
-//     SetAnimProp("timeScale", "0");
-// 	SetPlayHighlights(document.getElementById("animationPause"));
-// 		const entity = document.getElementById("3D-object");
-// 	 var mixer = entity.components["animation-mixer"];
-// 		mixer.playAction(mixer.activeAction); // Restart the animation
-// });
-// document.getElementById("animationPlayLoop").addEventListener("click", (event) => {
-//     animationStatusValues["currentLoop"]="repeat";
-//     SetAnimProp("loop", animationStatusValues["currentLoop"]);
-// 	SetLoopHighlights(document.getElementById("animationPlayLoop"));
-// });
-// document.getElementById("animationPlayOnce").addEventListener("click", (event) => {
-//     animationStatusValues["currentLoop"]="once";
-//     SetAnimProp("loop", animationStatusValues["currentLoop"]);
-// 	SetLoopHighlights(document.getElementById("animationPlayOnce"));
-// });
-// document.getElementById("animationSpeed-0.1").addEventListener("click", (event) => {
-//     animationStatusValues["currentSpeed"]="0.1";
-//     SetAnimProp("timeScale", animationStatusValues["currentSpeed"]);
-// 	SetSpeedHighlights(document.getElementById("animationSpeed-0.1"));
-// });
-// document.getElementById("animationSpeed-0.5").addEventListener("click", (event) => {
-//     animationStatusValues["currentSpeed"]="0.5";
-//     SetAnimProp("timeScale", animationStatusValues["currentSpeed"]);
-// 		SetSpeedHighlights(document.getElementById("animationSpeed-0.5"));
-// });
-// document.getElementById("animationSpeed-1.0").addEventListener("click", (event) => {
-//     animationStatusValues["currentSpeed"]="1.0";
-//     SetAnimProp("timeScale", animationStatusValues["currentSpeed"]);
-// 		SetSpeedHighlights(document.getElementById("animationSpeed-1.0"));
-// });
-// document.getElementById("animationSpeed-1.5").addEventListener("click", (event) => {
-//     animationStatusValues["currentSpeed"]="1.5";
-//     SetAnimProp("timeScale", animationStatusValues["currentSpeed"]);
-// 	SetSpeedHighlights(document.getElementById("animationSpeed-1.5"));
-// });
-// document.getElementById("animationSpeed-2.0").addEventListener("click", (event) => {
-//     animationStatusValues["currentSpeed"]="2.0";
-//     SetAnimProp("timeScale", animationStatusValues["currentSpeed"]);
-// 	SetSpeedHighlights(document.getElementById("animationSpeed-2.0"));
-// });
-
-
-
-
-function SetAnimProp(prop, newValue) {
-    const entity = document.getElementById("3D-object");
-    let currentProps = entity.getAttribute("animation-mixer") || "";
-
-    // Ensure currentProps is a string
-    if (typeof currentProps !== "string") {
-        currentProps = String(currentProps);
-    }
-
-    console.log("animation-mixer=" + currentProps);
-
-    // Convert current properties into an object
-    let propObj = Object.fromEntries(
-        currentProps.split(";").map(p => p.trim().split(":").map(s => s.trim()))
-    );
-
-    // Update the specified property
-    propObj[prop] = newValue;
-
-    // Convert back to attribute string
-    const updatedProps = Object.entries(propObj)
-        .map(([key, value]) => `${key}: ${value}`)
-        .join("; ");
-
-    // Apply updated properties
-    entity.setAttribute("animation-mixer", updatedProps);  
-	// document.getElementById('animationStatus').innerHTML = "Changed:"+prop + ": " + newValue+"<BR>Status: "+JSON.stringify(entity.getAttribute("animation-mixer"), null, 2).replace(/\n/g, "<br>");
-	
-}
 
 
 

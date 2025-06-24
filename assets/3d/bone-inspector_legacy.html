@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>GLB Hotspot Editor</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: #111; }
+    #overlay {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      max-height: 90vh;
+      overflow: auto;
+      background: rgba(0, 0, 0, 0.8);
+      color: #0f0;
+      font-family: monospace;
+      padding: 12px;
+      font-size: 13px;
+      z-index: 10;
+      white-space: pre-wrap;
+    }
+    .hotspot-item {
+      padding: 4px;
+      border-left: 3px solid transparent; /* For selection highlight */
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .hotspot-item:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    .hotspot-item.selected {
+      border-left: 3px solid #00ff00;
+      background-color: rgba(0, 255, 0, 0.1);
+    }
+    .hotspot-details {
+      padding-left: 20px;
+      font-size: 11px;
+      color: #aaa;
+    }
+    .model-structure-panel {
+      margin-top: 15px;
+      border-top: 1px solid #444;
+      padding-top: 10px;
+    }
+    .mesh-item {
+      padding: 4px;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+    }
+    .mesh-item:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    .mesh-item.selected {
+      border-left: 3px solid #0077ff; /* Blue highlight */
+      background-color: rgba(0, 120, 255, 0.1);
+    }
+    #json-output {
+      width: 95%;
+      height: 150px;
+      margin-top: 10px;
+      background-color: #222;
+      color: #0f0;
+      border: 1px solid #444;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .mode-buttons {
+      display: flex;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="overlay">Loading model...</div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { TransformControls } from 'three/addons/controls/TransformControls.js';
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 1.5, 3);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Add OrbitControls
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
+    controls.dampingFactor = 0.05;
+    controls.screenSpacePanning = false;
+    controls.minDistance = 0;
+    controls.maxDistance = 20;
+
+    let transformControls; // Declare here
+
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(2, 5, 3);
+    scene.add(light);
+    scene.add(new THREE.AmbientLight(0x404040));
+
+    const overlay = document.getElementById('overlay');
+    let loadedModel = null;
+
+    // --- Editor State ---
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    let editorMode = null; // null = no mode selected, 'add' or 'edit'
+    let placedHotspots = []; // Data for our hotspots
+    let hotspotMarkers = []; // Visual meshes for the hotspots
+    let selectedHotspot = null;
+    
+    let modelMeshes = []; // All distinct meshes from the loaded model
+    let selectedMesh = null; // The mesh currently highlighted from the UI list
+
+    // --- Utility Functions ---
+    function generateRandomColor() {
+      // Using HSL for more visually distinct and bright colors
+      const hue = Math.floor(Math.random() * 360);
+      return `hsl(${hue}, 100%, 50%)`;
+    }
+
+    // --- Core Functions ---
+
+    // Creates a visual marker for a hotspot
+    function createHotspotMarker(hotspotData) {
+      const geometry = new THREE.SphereGeometry(0.07, 16, 16);
+      const material = new THREE.MeshBasicMaterial({ 
+        color: hotspotData.color, // Use the data's color
+        transparent: true, 
+        opacity: 0.8,
+        depthTest: false
+      });
+      const marker = new THREE.Mesh(geometry, material);
+      marker.position.copy(hotspotData.worldPosition);
+      return marker;
+    }
+
+    // Handles clicking on the 3D model to place a hotspot
+    function onModelClick(event) {
+      // First, check if the click was on an existing marker
+      // This raycast happens first to give markers priority over the model
+      const markerIntersects = raycaster.intersectObjects(hotspotMarkers);
+      if (markerIntersects.length > 0) {
+        const clickedMarker = markerIntersects[0].object;
+        const hotspotData = placedHotspots.find(h => h.id === clickedMarker.userData.id);
+        if (hotspotData) {
+          selectHotspot(hotspotData);
+        }
+        return; // Stop processing to avoid placing a new point
+      }
+
+      // If no marker was clicked, check if the main model was clicked
+      const modelIntersects = raycaster.intersectObject(loadedModel, true);
+      if (modelIntersects.length > 0) {
+        // Only place a new hotspot if we are in 'add' mode
+        if (editorMode !== 'add') return;
+        
+        const intersection = modelIntersects[0];
+        const point = intersection.point;
+        const parentObject = intersection.object;
+
+        const hotspotName = prompt("Enter a name for this hotspot:", `hotspot_${placedHotspots.length + 1}`);
+        if (!hotspotName) return; // User cancelled
+
+        // Create the new hotspot data object
+        const newHotspot = {
+          id: THREE.MathUtils.generateUUID(),
+          name: hotspotName,
+          color: generateRandomColor(), // Assign a color
+          parentName: parentObject.name,
+          worldPosition: point.clone(),
+          // Calculate local position relative to the parent mesh
+          localPosition: parentObject.worldToLocal(point.clone())
+        };
+        placedHotspots.push(newHotspot);
+
+        // Create the visual marker
+        const marker = createHotspotMarker(newHotspot);
+        marker.userData.id = newHotspot.id; // Link marker to data
+        hotspotMarkers.push(marker);
+        scene.add(marker);
+        
+        selectHotspot(newHotspot);
+        return; // Stop processing
+      }
+      
+      // If nothing was clicked, deselect everything
+      deselectAll();
+    }
+
+    // Highlights a hotspot and updates its material
+    function selectHotspot(hotspotData) {
+      selectedHotspot = hotspotData;
+      
+      // Reset all markers to their original color
+      hotspotMarkers.forEach(m => {
+        const correspondingHotspot = placedHotspots.find(h => h.id === m.userData.id);
+        if (correspondingHotspot) {
+          m.material.color.set(correspondingHotspot.color);
+        }
+      });
+      
+      // Highlight the selected one with a brighter, emissive-like effect
+      const selectedMarker = hotspotMarkers.find(m => m.userData.id === hotspotData.id);
+      if (selectedMarker) {
+        selectedMarker.material.color.set(0xffffff); // Highlight in bright white
+        transformControls.attach(selectedMarker); // Re-attach gizmo
+        highlightParentMesh(hotspotData, true); // Highlight the parent
+      }
+      
+      updateOverlay();
+    }
+    
+    // Deselects any hotspot and restores original colors
+    function deselectAll() {
+      // Before deselecting, clear any existing mesh highlight
+      if (selectedHotspot) {
+        highlightParentMesh(selectedHotspot, false);
+      }
+      if (selectedMesh) {
+        highlightSelectedMesh(null); // Deselect the mesh
+      }
+
+      selectedHotspot = null;
+      // Reset all markers to their original color
+      hotspotMarkers.forEach(m => {
+        const correspondingHotspot = placedHotspots.find(h => h.id === m.userData.id);
+        if (correspondingHotspot) {
+          m.material.color.set(correspondingHotspot.color);
+        }
+      });
+      transformControls.detach(); // Detach gizmo!
+      updateOverlay();
+    }
+
+    // Temporarily highlights the mesh selected from the UI list
+    function highlightSelectedMesh(meshToHighlight) {
+      // First, reset the previously selected mesh (if any)
+      if (selectedMesh) {
+        if (selectedMesh.userData.originalMaterial) {
+          selectedMesh.material = selectedMesh.userData.originalMaterial;
+          delete selectedMesh.userData.originalMaterial;
+        }
+      }
+
+      selectedMesh = meshToHighlight;
+
+      // Now, highlight the new one
+      if (selectedMesh) {
+        if (!selectedMesh.userData.originalMaterial) {
+          selectedMesh.userData.originalMaterial = selectedMesh.material;
+        }
+        selectedMesh.material = selectedMesh.material.clone();
+        selectedMesh.material.emissive.set(0x0000ff); // Highlight meshes in blue
+      }
+      updateOverlay();
+    }
+
+    // Temporarily highlights the parent mesh of a hotspot
+    function highlightParentMesh(hotspotData, shouldHighlight) {
+      if (!loadedModel || !hotspotData) return;
+
+      const parentObject = loadedModel.getObjectByName(hotspotData.parentName);
+      if (parentObject && parentObject.isMesh) {
+        if (shouldHighlight) {
+          // If we haven't already stored the original, do it now.
+          if (!parentObject.userData.originalMaterial) {
+            parentObject.userData.originalMaterial = parentObject.material;
+          }
+          // Clone the material to not affect other meshes sharing the same material.
+          parentObject.material = parentObject.material.clone();
+          // Set the emissive highlight on our new, unique material.
+          parentObject.material.emissive.set(hotspotData.color);
+        } else {
+          // Restore the original material if we have it stored.
+          if (parentObject.userData.originalMaterial) {
+            parentObject.material = parentObject.userData.originalMaterial;
+            // Clean up the custom data to be ready for the next highlight.
+            delete parentObject.userData.originalMaterial;
+          }
+        }
+      }
+    }
+    
+    // Updates the HTML overlay with the list of hotspots and controls
+    function updateOverlay() {
+      const addModeStyle = editorMode === 'add' ? 'background-color: #45a049;' : 'background-color: #666;';
+      const editModeStyle = editorMode === 'edit' ? 'background-color: #45a049;' : 'background-color: #666;';
+
+      let html = `<div class="mode-buttons">
+        <button style="${addModeStyle}" onclick="window.setEditorMode('add')">Add Mode</button>
+        <button style="${editModeStyle}" onclick="window.setEditorMode('edit')">Edit Mode</button>
+      </div>`;
+      html += `<p><b>Mode:</b> ${editorMode === 'add' ? 'Click on model to add a hotspot.' : 'Click a marker to select and edit.'}</p>`;
+      
+      html += `<b>Placed Hotspots (${placedHotspots.length}):</b>\n`;
+      
+      placedHotspots.forEach(hotspot => {
+        const isSelected = selectedHotspot && selectedHotspot.id === hotspot.id;
+        const itemClass = isSelected ? 'hotspot-item selected' : 'hotspot-item';
+        const deleteButtonStyle = 'color: red; background: none; border: none; cursor: pointer;';
+        const colorSwatch = `<span style="display: inline-block; width: 12px; height: 12px; background-color: ${hotspot.color}; margin-right: 8px; border-radius: 50%;"></span>`;
+        
+        html += `<div class="${itemClass}">
+                   <div style="display: flex; align-items: center;">
+                     ${colorSwatch}
+                     <span style="cursor: pointer;" onclick="window.selectHotspotById('${hotspot.id}')">${hotspot.name}</span>
+                   </div>
+                   <button style="${deleteButtonStyle}" onclick="window.deleteHotspotById('${hotspot.id}')">X</button>`;
+        
+        if (isSelected) {
+          html += `<div class="hotspot-details">
+                     <div>Parent Mesh: ${hotspot.parentName}</div>
+                     <div>Local Pos: (${hotspot.localPosition.x.toFixed(2)}, ${hotspot.localPosition.y.toFixed(2)}, ${hotspot.localPosition.z.toFixed(2)})</div>
+                   </div>`;
+        }
+
+        html += `</div>`;
+      });
+      
+      // --- Model Structure Panel ---
+      html += `<div class="model-structure-panel">
+                 <b>Model Structure (${modelMeshes.length} meshes):</b>`;
+      modelMeshes.forEach(mesh => {
+        const isMeshSelected = selectedMesh === mesh;
+        const meshItemClass = isMeshSelected ? 'mesh-item selected' : 'mesh-item';
+        html += `<div class="${meshItemClass}" onclick="window.selectMeshByName('${mesh.name}')">
+                   - ${mesh.name || '[unnamed mesh]'}
+                 </div>`;
+      });
+      html += `</div>`;
+      
+      html += `<hr style="margin-top: 15px;">\n<button onclick="window.generateJson()">Generate Hotspots JSON</button>\n`;
+      html += `<textarea id="json-output"></textarea>`;
+      
+      overlay.innerHTML = html;
+    }
+
+    // Global functions accessible from HTML onclick attributes
+    window.setEditorMode = function(mode) {
+      editorMode = mode;
+      console.log(`Editor mode set to: ${mode}`);
+      // When switching to edit mode, deselect to avoid confusion
+      if (mode === 'edit') {
+        deselectAll();
+      }
+      updateOverlay();
+    };
+
+    window.deleteHotspotById = function(id) {
+      if (!confirm('Are you sure you want to delete this hotspot?')) return;
+
+      // Find and remove the data entry
+      const indexToRemove = placedHotspots.findIndex(h => h.id === id);
+      if (indexToRemove > -1) {
+        placedHotspots.splice(indexToRemove, 1);
+      }
+
+      // Find and remove the visual marker
+      const markerIndexToRemove = hotspotMarkers.findIndex(m => m.userData.id === id);
+      if (markerIndexToRemove > -1) {
+        const markerToRemove = hotspotMarkers[markerIndexToRemove];
+        // If it's being edited, detach the gizmo first
+        if (transformControls.object === markerToRemove) {
+          transformControls.detach();
+        }
+        scene.remove(markerToRemove);
+        hotspotMarkers.splice(markerIndexToRemove, 1);
+      }
+
+      // If the deleted hotspot was the selected one, clear the selection
+      if (selectedHotspot && selectedHotspot.id === id) {
+        selectedHotspot = null;
+      }
+
+      updateOverlay();
+    };
+
+    window.selectHotspotById = function(id) {
+      const hotspotData = placedHotspots.find(h => h.id === id);
+      if (hotspotData) {
+        selectHotspot(hotspotData);
+      }
+    };
+
+    window.generateJson = function() {
+      const outputData = placedHotspots.map(h => ({
+        // --- Full Template for data.json ---
+        id: h.name, 
+        type: "media", // Default type, can be changed in JSON
+        label: h.name,
+        visited: false, // Default value
+        requireAnswer: false, // Default value
+
+        // --- Correct Keys for Controller Logic ---
+        parentName: h.parentName,
+        localPosition: {
+          x: h.localPosition.x,
+          y: h.localPosition.y,
+          z: h.localPosition.z
+        },
+        
+        // --- Default Details Block ---
+        details: {                    
+          targetTitle: h.name,
+          targetDesc: `Description for ${h.name}.`
+        }
+      }));
+
+      const jsonString = JSON.stringify(outputData, null, 2);
+      const textarea = document.getElementById('json-output');
+      textarea.value = jsonString;
+      textarea.select();
+      // You can also add copy-to-clipboard functionality here
+      console.log("Generated Hotspot JSON:", jsonString);
+    };
+
+    window.selectMeshByName = function(name) {
+      const mesh = modelMeshes.find(m => m.name === name);
+      if (mesh) {
+        highlightSelectedMesh(mesh);
+      }
+    };
+
+    // --- Scene Reset and Model Loading ---
+
+    function clearScene() {
+      // Remove current model
+      if (loadedModel) {
+        scene.remove(loadedModel);
+        loadedModel = null;
+      }
+      // Remove all markers
+      hotspotMarkers.forEach(marker => scene.remove(marker));
+      hotspotMarkers = [];
+      placedHotspots = [];
+      modelMeshes = [];
+      selectedMesh = null;
+      // Detach any active gizmo
+      if (transformControls) {
+        transformControls.detach();
+      }
+      updateOverlay();
+    }
+
+    function loadModel(url) {
+      clearScene();
+      overlay.innerHTML = 'Loading model...';
+      const loader = new GLTFLoader();
+
+      loader.load(url, gltf => {
+        loadedModel = gltf.scene;
+        scene.add(loadedModel);
+        
+        // --- Find all distinct meshes for the UI ---
+        modelMeshes = [];
+        loadedModel.traverse(node => {
+          if (node.isMesh) {
+            modelMeshes.push(node);
+          }
+        });
+        
+        // Initialize or re-initialize TransformControls here, after the camera and renderer are ready
+        if (!transformControls) {
+          transformControls = new TransformControls(camera, renderer.domElement);
+          scene.add(transformControls);
+          
+          // Add event listeners only once
+          transformControls.addEventListener('dragging-changed', event => {
+            controls.enabled = !event.value;
+          });
+          transformControls.addEventListener('mouseUp', () => {
+             if (!transformControls.object) return;
+             const marker = transformControls.object;
+             const hotspotData = placedHotspots.find(h => h.id === marker.userData.id);
+             if (hotspotData) {
+               const parentObject = loadedModel.getObjectByName(hotspotData.parentName);
+               if (parentObject) {
+                 hotspotData.worldPosition.copy(marker.position);
+                 hotspotData.localPosition.copy(parentObject.worldToLocal(marker.position.clone()));
+                 updateOverlay();
+               }
+             }
+          });
+        }
+        
+        // Reset controls to fit the new model
+        controls.reset();
+        updateOverlay();
+        console.log("Model loaded successfully.");
+      }, undefined, err => {
+        console.error('Failed to load model:', err);
+        overlay.innerHTML = `❌ Failed to load model from ${url}. Check console.`;
+      });
+    }
+
+    // --- Initialization & Event Listeners ---
+    
+    // Drag and Drop Listeners
+    document.body.addEventListener('dragover', (event) => {
+      event.preventDefault();
+    });
+
+    document.body.addEventListener('drop', (event) => {
+      event.preventDefault();
+      const file = event.dataTransfer.files[0];
+      if (file) {
+        const url = URL.createObjectURL(file);
+        loadModel(url);
+      }
+    });
+
+    // Mouse Listeners
+    renderer.domElement.addEventListener('mousedown', (event) => {
+      // We set the raycaster here to use in the click handler
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+    });
+    renderer.domElement.addEventListener('click', onModelClick);
+
+    // Initial load (optional, can be removed to start with a blank scene)
+    loadModel('./animated_triceratops_skeleton.glb');
+
+    // --- Animation Loop ---
+    function animate() {
+      requestAnimationFrame(animate);
+      
+      // --- Hotspot Marker Scaling ---
+      // Adjust the size of the markers based on their distance from the camera
+      // to maintain a more consistent apparent size on screen.
+      if (camera && hotspotMarkers.length > 0) {
+        hotspotMarkers.forEach(marker => {
+          const distance = camera.position.distanceTo(marker.position);
+          // This constant determines the apparent size. It can be tuned if needed.
+          const scale = distance * 0.25; 
+          marker.scale.set(scale, scale, scale);
+        });
+      }
+      
+      controls.update();
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+  </script>
+</body>
+</html>

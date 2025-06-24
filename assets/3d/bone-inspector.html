@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bone Inspector / Hotspot Editor</title>
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v7.0.0/dist/aframe-extras.min.js"></script>
+    <script src="https://unpkg.com/three@0.157.0/examples/jsm/controls/TransformControls.js"></script>
+
+  <style>
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        a-scene { height: 100vh; width: 100vw; }
+        #editor-ui {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+            background: rgba(20, 20, 20, 0.9);
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            width: 320px;
+            max-height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+      z-index: 10;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+        .ui-panel {
+            background: #333;
+            border-radius: 5px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .ui-panel h3 {
+            margin: 0;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #555;
+            font-size: 16px;
+        }
+        #mesh-list-container, #hotspot-list-container {
+            max-height: 150px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+        .mesh-item, .hotspot-accordion .header {
+            padding: 8px;
+            background: #444;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .mesh-item:hover, .hotspot-accordion .header:hover {
+            background: #555;
+        }
+        .mesh-item.selected {
+            background: #007BFF;
+            color: white;
+        }
+        .hotspot-accordion.open .header {
+            background: #007BFF;
+        }
+        .hotspot-accordion .body {
+            display: none;
+            padding: 10px;
+            background: #2a2a2a;
+            border-top: 1px solid #555;
+        }
+         .hotspot-accordion.open .body {
+            display: block;
+        }
+        .coord-grid {
+            display: grid;
+            grid-template-columns: 20px 1fr;
+            gap: 5px 10px;
+            align-items: center;
+        }
+        .coord-grid label {
+            font-weight: bold;
+        }
+        .coord-grid input {
+            width: 100%;
+            box-sizing: border-box;
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 3px;
+            padding: 4px;
+        }
+        .control-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .control-group button {
+            flex-grow: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 3px;
+            background: #007BFF;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .control-group button:hover {
+            background: #0056b3;
+        }
+         .control-group button.toggled {
+            background: #28a745;
+        }
+        #json-panel {
+            display: none; /* Hidden by default */
+        }
+        #json-panel textarea {
+            width: 100%;
+            box-sizing: border-box;
+            min-height: 150px;
+            background: #222;
+            color: #eee;
+            border: 1px solid #555;
+            padding: 10px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        #drop-zone {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 2em;
+            border: 2px dashed #fff;
+    }
+  </style>
+</head>
+<body>
+    <div id="editor-ui">
+        <div class="ui-panel">
+            <h3>Controls</h3>
+            <div class="control-group">
+                <button id="add-mode-btn">Add Mode</button>
+                <button id="edit-mode-btn">Edit Mode</button>
+            </div>
+             <div class="control-group">
+                <button id="reset-view-btn">Reset View [R]</button>
+            </div>
+             <div class="control-group">
+                <button id="toggle-json-btn">Show/Hide JSON</button>
+            </div>
+        </div>
+
+        <div class="ui-panel">
+            <h3>Meshes</h3>
+            <div id="mesh-list-container"></div>
+        </div>
+
+        <div class="ui-panel">
+            <h3>Hotspots</h3>
+            <div id="hotspot-list-container"></div>
+        </div>
+        
+        <div class="ui-panel" id="json-panel">
+            <h3>JSON I/O</h3>
+            <textarea id="json-output"></textarea>
+            <div class="control-group">
+                 <button id="update-from-json-btn">Update From JSON</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="drop-zone">Drop model file here</div>
+
+    <a-scene background="color: #333" renderer="colorManagement: true;">
+        <a-entity id="camera" camera="active: true"
+                  position="0 1.6 3"
+                  wasd-controls="fly: true"
+                  look-controls="pointerLockEnabled: true">
+        </a-entity>
+
+        <a-entity light="type: ambient; intensity: 0.5;"></a-entity>
+        <a-entity light="type: directional; intensity: 1.5; position: -1 2 2"></a-entity>
+
+        <a-entity id="model-container"
+                  editor-logic
+                  gltf-model="assets/3d/animated_triceratops_skeleton.glb">
+        </a-entity>
+
+        <a-entity id="origin-sphere"
+                  geometry="primitive: sphere; radius: 0.05"
+                  material="color: yellow; shader: flat"
+                  dynamic-scaler>
+        </a-entity>
+
+        <a-entity id="raycaster-entity" cursor="rayOrigin: mouse" raycaster="objects: [gltf-model];"></a-entity>
+    </a-scene>
+
+    <script>
+    AFRAME.registerComponent('dynamic-scaler', {
+        schema: {
+            minScale: { type: 'number', default: 1 },
+            maxScale: { type: 'number', default: 10 },
+        },
+        init: function () {
+            this.camera = this.el.sceneEl.camera;
+            this.initialScale = this.el.object3D.scale.clone();
+        },
+        tick: function () {
+            if (!this.el.object3D.visible) return;
+            const distance = this.el.object3D.getWorldPosition(new THREE.Vector3()).distanceTo(this.camera.getWorldPosition(new THREE.Vector3()));
+            let scale = distance / 5;
+            scale = Math.max(this.data.minScale, Math.min(this.data.maxScale, scale));
+            this.el.object3D.scale.set(this.initialScale.x * scale, this.initialScale.y * scale, this.initialScale.z * scale);
+        }
+    });
+
+    AFRAME.registerComponent('editor-logic', {
+      init: function() {
+        this.model = null;
+        this.meshes = [];
+        this.hotspots = [];
+        this.selectedHotspot = null;
+        this.isAddMode = false;
+
+        this.ui = {
+          meshList: document.getElementById('mesh-list-container'),
+          hotspotList: document.getElementById('hotspot-list-container'),
+          addModeBtn: document.getElementById('add-mode-btn'),
+          editModeBtn: document.getElementById('edit-mode-btn'),
+          resetViewBtn: document.getElementById('reset-view-btn'),
+          toggleJsonBtn: document.getElementById('toggle-json-btn'),
+          updateFromJsonBtn: document.getElementById('update-from-json-btn'),
+          jsonPanel: document.getElementById('json-panel'),
+          jsonOutput: document.getElementById('json-output'),
+          dropZone: document.getElementById('drop-zone')
+        };
+        
+        this.availableColors = ["#ff69b4", "#ffeb3b", "#8bc34a", "#03a9f4", "#9c27b0", "#ff9800", "#e91e63"];
+        this.colorIndex = 0;
+
+        this.el.addEventListener('model-loaded', this.onModelLoaded.bind(this));
+        this.el.sceneEl.addEventListener('click', this.onSceneClick.bind(this));
+        
+        this.setupUIListeners();
+        this.setupDragDrop();
+        this.setupTransformControls();
+        this.setupKeyboardListeners();
+      },
+
+      onModelLoaded: function(evt) {
+        this.model = evt.detail.model;
+        console.log("Model loaded:", this.model);
+        this.meshes = [];
+        this.model.traverse(node => {
+          if (node.isMesh) {
+            this.meshes.push(node);
+          }
+        });
+        // Clear old hotspots
+        this.hotspots.forEach(h => {
+            if (h.marker) h.marker.parentNode.removeChild(h.marker);
+        });
+        this.hotspots = [];
+        this.transformControls.detach();
+        this.render();
+      },
+
+      // --- SETUP FUNCTIONS ---
+      setupUIListeners: function() {
+        this.ui.addModeBtn.addEventListener('click', () => this.setMode(true));
+        this.ui.editModeBtn.addEventListener('click', () => this.setMode(false));
+        this.ui.resetViewBtn.addEventListener('click', this.resetView.bind(this));
+        this.ui.toggleJsonBtn.addEventListener('click', () => {
+            const isHidden = this.ui.jsonPanel.style.display === 'none';
+            this.ui.jsonPanel.style.display = isHidden ? 'flex' : 'none';
+        });
+        this.ui.updateFromJsonBtn.addEventListener('click', this.updateHotspotsFromJson.bind(this));
+        
+        this.setMode(false); // Default to edit mode
+      },
+        
+      setupDragDrop: function() {
+          const dropZone = this.ui.dropZone;
+          const sceneEl = this.el.sceneEl;
+          sceneEl.addEventListener('dragenter', (e) => {
+              e.preventDefault();
+              dropZone.style.display = 'flex';
+          });
+          dropZone.addEventListener('dragover', (e) => { e.preventDefault(); });
+          dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); dropZone.style.display = 'none'; });
+          dropZone.addEventListener('drop', (e) => {
+              e.preventDefault();
+              dropZone.style.display = 'none';
+              const file = e.dataTransfer.files[0];
+              if (file && (file.name.endsWith('.glb') || file.name.endsWith('.gltf'))) {
+                  const url = URL.createObjectURL(file);
+                  this.el.setAttribute('gltf-model', url);
+              }
+          });
+      },
+        
+      setupTransformControls: function() {
+          this.camera = this.el.sceneEl.camera;
+          this.renderer = this.el.sceneEl.renderer;
+          this.transformControls = new THREE.TransformControls(this.camera, this.renderer.domElement);
+          this.el.sceneEl.object3D.add(this.transformControls);
+
+          this.transformControls.addEventListener('dragging-changed', (event) => {
+              const lookControls = document.getElementById('camera').components['look-controls'];
+              if (lookControls) { lookControls.enabled = !event.value; }
+          });
+
+          this.transformControls.addEventListener('objectChange', () => {
+              if (this.selectedHotspot && this.selectedHotspot.marker) {
+                  const marker = this.selectedHotspot.marker;
+                  const newPos = marker.object3D.position;
+                  this.selectedHotspot.localPosition = { x: newPos.x, y: newPos.y, z: newPos.z };
+                  this.render();
+              }
+          });
+      },
+        
+      setupKeyboardListeners: function() {
+          window.addEventListener('keydown', (e) => {
+              if (e.key.toLowerCase() === 'r') {
+                  this.resetView();
+              }
+          });
+      },
+
+      // --- CORE LOGIC ---
+      setMode: function(isAdd) {
+          this.isAddMode = isAdd;
+          this.ui.addModeBtn.classList.toggle('toggled', isAdd);
+          this.ui.editModeBtn.classList.toggle('toggled', !isAdd);
+          if (this.isAddMode && this.transformControls.object) {
+              this.transformControls.detach();
+              this.selectHotspot(null); // Deselect hotspot
+          }
+      },
+        
+      resetView: function() {
+          const cameraEl = document.getElementById('camera');
+          cameraEl.setAttribute('position', '0 1.6 3');
+          cameraEl.object3D.lookAt(new THREE.Vector3(0, 0, 0));
+      },
+
+      onSceneClick: function(evt) {
+        if (this.isAddMode) {
+            if (evt.detail.intersection) {
+                this.addHotspotAt(evt.detail.intersection);
+            }
+        } else {
+            // In edit mode, clicking a marker is handled by the marker's own click listener.
+            // Clicking anything else deselects.
+            if (evt.target.tagName !== 'A-ENTITY' || !evt.target.hasAttribute('hotspot-marker')) {
+                this.selectHotspot(null);
+            }
+        }
+      },
+
+      addHotspotAt: function(intersection) {
+        if (!intersection) return;
+        const clickedMesh = intersection.object;
+        if (!clickedMesh.el) return; // Not an A-Frame entity
+
+        const newHotspot = {
+          name: `Hotspot ${this.hotspots.length + 1}`,
+          parentName: clickedMesh.name,
+          localPosition: clickedMesh.worldToLocal(intersection.point.clone()),
+          color: this.getNextColor(),
+          isOpen: false,
+          marker: null
+        };
+
+        this.hotspots.push(newHotspot);
+        this.render(); 
+        this.selectHotspot(newHotspot); 
+        this.setMode(false); 
+      },
+
+      selectHotspot: function(hotspot) {
+          // Deselect previous
+          if (this.selectedHotspot && this.selectedHotspot.marker) {
+              this.selectedHotspot.marker.setAttribute('material', 'color', this.selectedHotspot.color);
+          }
+
+          this.selectedHotspot = hotspot;
+          this.transformControls.detach();
+
+          // Select new one
+          if (this.selectedHotspot && this.selectedHotspot.marker) {
+              this.selectedHotspot.marker.setAttribute('material', 'color', 'white');
+              this.transformControls.attach(this.selectedHotspot.marker.object3D);
+          }
+          
+          this.hotspots.forEach(h => h.isOpen = (h === this.selectedHotspot));
+          this.render();
+      },
+
+      // --- UTILITIES ---
+      generateJson: function() {
+        const hotspotData = this.hotspots.map(hotspot => {
+          if (!hotspot.parentName || !hotspot.localPosition) return null;
+          
+          const parentObject = this.el.sceneEl.object3D.getObjectByName(hotspot.parentName);
+          if (!parentObject) return null;
+
+          const worldPosition = new THREE.Vector3(hotspot.localPosition.x, hotspot.localPosition.y, hotspot.localPosition.z);
+          parentObject.localToWorld(worldPosition);
+
+          return {
+            name: hotspot.name,
+            parentName: hotspot.parentName,
+            position: { x: worldPosition.x, y: worldPosition.y, z: worldPosition.z }
+          };
+        });
+
+        const filteredHotspotData = hotspotData.filter(h => h);
+        const jsonOutput = { "hotspots": filteredHotspotData };
+        const jsonString = JSON.stringify(jsonOutput, null, 2);
+        this.ui.jsonOutput.value = jsonString;
+      },
+        
+      updateHotspotsFromJson: function() {
+          try {
+              const data = JSON.parse(this.ui.jsonOutput.value);
+              let newHotspotsData = data.hotspots || (Array.isArray(data) ? data : []);
+
+              this.hotspots.forEach(h => { if (h.marker) h.marker.parentNode.removeChild(h.marker); });
+              this.hotspots = [];
+              this.transformControls.detach();
+
+              newHotspotsData.forEach((hs, index) => {
+                  const parentObject = this.el.sceneEl.object3D.getObjectByName(hs.parentName);
+                  if (parentObject) {
+                      const worldPos = new THREE.Vector3(hs.position.x, hs.position.y, hs.position.z);
+                      const localPos = parentObject.worldToLocal(worldPos.clone());
+                      this.hotspots.push({
+                          name: hs.name || `Hotspot ${index + 1}`,
+                          parentName: hs.parentName,
+                          localPosition: { x: localPos.x, y: localPos.y, z: localPos.z },
+                          color: this.getNextColor(),
+                          isOpen: false,
+                          marker: null
+                      });
+                  } else {
+                      console.warn(`Could not find parent mesh "${hs.parentName}" for hotspot "${hs.name}"`);
+                  }
+              });
+              this.render();
+              alert("Hotspots updated successfully from JSON!");
+          } catch (e) {
+              alert("Error parsing JSON: " + e.message);
+          }
+      },
+        
+      getNextColor: function() {
+          const color = this.availableColors[this.colorIndex % this.availableColors.length];
+          this.colorIndex++;
+          return color;
+      },
+
+      render: function() {
+        this.ui.meshList.innerHTML = '';
+        this.meshes.forEach(mesh => {
+          const item = document.createElement('div');
+          item.className = 'mesh-item';
+          item.textContent = mesh.name;
+          this.ui.meshList.appendChild(item);
+        });
+
+        this.ui.hotspotList.innerHTML = '';
+        this.hotspots.forEach((hotspot) => {
+          if (!hotspot.marker) {
+            const parentEl = this.el.sceneEl.object3D.getObjectByName(hotspot.parentName)?.el;
+            if (parentEl) {
+              hotspot.marker = document.createElement('a-entity');
+              hotspot.marker.setAttribute('geometry', { primitive: 'sphere', radius: 0.05 });
+              hotspot.marker.setAttribute('dynamic-scaler', '');
+              hotspot.marker.setAttribute('hotspot-marker', '');
+              hotspot.marker.hotspotRef = hotspot;
+              hotspot.marker.addEventListener('click', (evt) => {
+                  evt.stopPropagation();
+                  if (!this.isAddMode) this.selectHotspot(hotspot);
+              });
+              parentEl.appendChild(hotspot.marker);
+            }
+          }
+
+          if (hotspot.marker) {
+              const isSelected = this.selectedHotspot === hotspot;
+              hotspot.marker.setAttribute('material', 'color', isSelected ? 'white' : hotspot.color);
+              hotspot.marker.object3D.position.copy(hotspot.localPosition);
+          }
+
+          const accordion = document.createElement('div');
+          accordion.className = 'hotspot-accordion' + (hotspot.isOpen ? ' open' : '');
+          
+          const header = document.createElement('div');
+          header.className = 'header';
+          header.textContent = hotspot.name;
+          header.onclick = () => this.selectHotspot(hotspot);
+
+          const body = document.createElement('div');
+          body.className = 'body';
+          
+          const coordGrid = document.createElement('div');
+          coordGrid.className = 'coord-grid';
+          ['x', 'y', 'z'].forEach(axis => {
+              const label = document.createElement('label');
+              label.textContent = axis.toUpperCase();
+              const input = document.createElement('input');
+              input.type = 'number';
+              input.step = 0.01;
+              input.value = hotspot.localPosition[axis].toFixed(4);
+              input.onchange = (e) => {
+                  hotspot.localPosition[axis] = parseFloat(e.target.value);
+                  this.render();
+              };
+              coordGrid.appendChild(label);
+              coordGrid.appendChild(input);
+          });
+          
+          body.appendChild(coordGrid);
+          accordion.appendChild(header);
+          accordion.appendChild(body);
+          this.ui.hotspotList.appendChild(accordion);
+        });
+        
+        this.generateJson();
+      }
+    });
+  </script>
+</body>
+</html>

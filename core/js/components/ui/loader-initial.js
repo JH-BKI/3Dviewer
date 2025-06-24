@@ -51,6 +51,7 @@
         font-family: sans-serif;
         transition: opacity 1s ease-in-out;
         opacity: 1;
+        overflow: hidden;
       }
 
       #loading-screen .loading-text {
@@ -63,7 +64,7 @@
         z-index: 9;
         width: 316px;
         position: absolute;
-        bottom: 2%;
+        bottom: 4%;
         right: 50%;
         text-align: center;
         margin-right: -158px;

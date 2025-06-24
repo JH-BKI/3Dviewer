@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>360 Video Player with Bulma + Vimeo-style Controls</title>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.0"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"
+    />
+    <style>
+      #loadingScreen,
+      #clickToPlay,
+      #htmlControls {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.85);
+        color: white;
+        z-index: 9999;
+      }
+      #clickToPlay {
+        display: none;
+        cursor: pointer;
+        font-size: 2em;
+      }
+      #loadingScreen {
+        background: black;
+      }
+      #htmlControls {
+        display: none;
+        z-index: 9998;
+        flex-direction: column;
+        bottom: 20px;
+        top: auto;
+        padding: 0.75rem 1rem;
+        background: rgba(20, 20, 20, 0.8);
+        border-radius: 6px;
+        width: 100%;
+        max-width: 600px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .control-bar {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        width: 100%;
+      }
+      #videoSeek.slider {
+        flex: 1;
+        accent-color: #1ab7ea;
+      }
+      #btnToggle, #btnMute {
+        border: none;
+        background: transparent;
+        font-size: 1.2rem;
+        color: white;
+      }
+      #timeInfo {
+        font-size: 0.9rem;
+        color: #ccc;
+        white-space: nowrap;
+      }
+      #bufferBar {
+        position: absolute;
+        bottom: 2.75rem;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100%;
+        max-width: 600px;
+        height: 4px;
+        background: #333;
+        z-index: 9997;
+      }
+      #bufferProgress {
+        height: 100%;
+        background: rgba(26, 183, 234, 0.5);
+        width: 0%;
+        transition: width 0.2s ease-out;
+      }
+    </style>
+    <script>
+      AFRAME.registerComponent("hls-fallback-360", {
+        schema: {
+          hlsSrc: { type: "string" },
+          mp4Src: { type: "string" },
+        },
+        init: function () {
+          const video = document.createElement("video");
+          video.setAttribute("id", "vrVideo");
+          video.setAttribute("crossorigin", "anonymous");
+          video.setAttribute("webkit-playsinline", "");
+          video.setAttribute("playsinline", "");
+          video.setAttribute("muted", "");
+          video.setAttribute("loop", "");
+          video.style.display = "none";
+          this.el.sceneEl.appendChild(video);
+          this.el.setAttribute("src", "#vrVideo");
+
+          const loading = document.getElementById("loadingScreen");
+          const clickToPlay = document.getElementById("clickToPlay");
+          const htmlControls = document.getElementById("htmlControls");
+          const toggleBtn = document.getElementById("btnToggle");
+          const muteBtn = document.getElementById("btnMute");
+          const seekInput = document.getElementById("videoSeek");
+          const timeInfo = document.getElementById("timeInfo");
+          const bufferBar = document.getElementById("bufferBar");
+          const bufferProgress = document.getElementById("bufferProgress");
+
+          let audioCtx, sourceNode, panner;
+
+          const setupSpatialAudio = () => {
+            audioCtx = new AudioContext();
+            sourceNode = audioCtx.createMediaElementSource(video);
+            panner = audioCtx.createPanner();
+            panner.setPosition(0, 1.6, 0);
+            sourceNode.connect(panner).connect(audioCtx.destination);
+          };
+
+          const formatTime = (t) => {
+            const mins = Math.floor(t / 60);
+            const secs = Math.floor(t % 60).toString().padStart(2, "0");
+            return `${mins}:${secs}`;
+          };
+
+          video.addEventListener("timeupdate", () => {
+            if (!isNaN(video.duration)) {
+              timeInfo.innerText = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
+              seekInput.value = (video.currentTime / video.duration) * 100;
+            }
+          });
+
+          seekInput.addEventListener("input", () => {
+            if (!isNaN(video.duration)) {
+              video.currentTime = (seekInput.value / 100) * video.duration;
+            }
+          });
+
+          toggleBtn.onclick = () => {
+            if (video.paused) {
+              video.play();
+            } else {
+              video.pause();
+            }
+          };
+
+          muteBtn.onclick = () => {
+            video.muted = !video.muted;
+            muteBtn.textContent = video.muted ? "🔇" : "🔊";
+          };
+
+          video.addEventListener("play", () => toggleBtn.textContent = "⏸️");
+          video.addEventListener("pause", () => toggleBtn.textContent = "▶️");
+
+          const tryPlay = () => {
+            setupSpatialAudio();
+            video.play().catch((err) => console.warn("Autoplay blocked:", err));
+          };
+
+          const fallbackToMP4 = () => {
+            video.src = this.data.mp4Src;
+            video.load();
+            video.addEventListener("canplaythrough", onReady);
+          };
+
+          const onReady = () => {
+            const minBuffer = 5;
+            const checkBuffer = () => {
+              const buffered = video.buffered;
+              if (buffered.length && buffered.end(0) - buffered.start(0) >= minBuffer) {
+                loading.style.display = "none";
+                clickToPlay.style.display = "flex";
+              } else {
+                setTimeout(checkBuffer, 500);
+              }
+            };
+            checkBuffer();
+          };
+
+          if (Hls.isSupported()) {
+            const hls = new Hls();
+            hls.loadSource(this.data.hlsSrc);
+            hls.attachMedia(video);
+            hls.on(Hls.Events.MANIFEST_PARSED, () => {
+              video.addEventListener("canplaythrough", onReady);
+            });
+            hls.on(Hls.Events.ERROR, (event, data) => {
+              if (data.fatal) {
+                console.warn("Falling back to MP4");
+                hls.destroy();
+                fallbackToMP4();
+              }
+            });
+          } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+            video.src = this.data.hlsSrc;
+            video.addEventListener("canplaythrough", onReady);
+          } else {
+            fallbackToMP4();
+          }
+
+          video.addEventListener("progress", () => {
+            if (video.buffered.length > 0 && !isNaN(video.duration)) {
+              const bufferedEnd = video.buffered.end(video.buffered.length - 1);
+              const percent = (bufferedEnd / video.duration) * 100;
+              bufferProgress.style.width = percent + "%";
+            }
+          });
+
+          clickToPlay.addEventListener("click", () => {
+            clickToPlay.style.display = "none";
+            htmlControls.style.display = "flex";
+            bufferBar.style.display = "block";
+            tryPlay();
+          });
+
+          let uiTimeout;
+          const resetUITimer = () => {
+            htmlControls.style.opacity = 1;
+            bufferBar.style.opacity = 1;
+            clearTimeout(uiTimeout);
+            uiTimeout = setTimeout(() => {
+              htmlControls.style.opacity = 0;
+              bufferBar.style.opacity = 0;
+            }, 5000);
+          };
+
+          ["mousemove", "click", "touchstart"].forEach((e) =>
+            window.addEventListener(e, resetUITimer)
+          );
+          resetUITimer();
+
+          AFRAME.registerComponent("vr-controls", {
+            init: function () {
+              const el = this.el;
+              el.addEventListener("click", () => {
+                const action = el.getAttribute("action");
+                if (action === "play") video.play();
+                if (action === "pause") video.pause();
+                if (action === "stop") {
+                  video.pause();
+                  video.currentTime = 0;
+                }
+              });
+            },
+          });
+        },
+      });
+    </script>
+  </head>
+  <body>
+    <div id="loadingScreen" class="has-text-centered is-size-4">Loading...</div>
+
+    <div id="clickToPlay" class="has-text-centered is-size-3 has-text-white" style="display:none; cursor:pointer;">
+      Click to Play
+    </div>
+
+    <div id="bufferBar"><div id="bufferProgress"></div></div>
+
+    <div id="htmlControls" class="box">
+      <div class="control-bar">
+        <button id="btnToggle" class="button is-white is-small">▶️</button>
+        <button id="btnMute" class="button is-white is-small">🔊</button>
+        <input id="videoSeek" class="slider" type="range" min="0" max="100" value="0" />
+        <span id="timeInfo">0:00 / 0:00</span>
+      </div>
+    </div>
+
+    <a-scene>
+
+      <a-videosphere
+        hls-fallback-360="
+        hlsSrc: https://player.vimeo.com/external/1081206255.m3u8?s=c87786c82eb53bfccb018060ae9621df76043ab9&logging=false;
+        mp4Src: https://player.vimeo.com/progressive_redirect/playback/1081206255/rendition/2160p/file.mp4?loc=external&signature=ca47c6f25247cc7bbed4e8bbe083e1ff7847473bbee93f2a59c54b03f997b61f">
+      ></a-videosphere>
+
+      <a-camera look-controls position="0 1.6 0"></a-camera>
+
+      <a-entity position="0 1.4 -1.5">
+        <a-box vr-controls action="play" color="#23d160" depth="0.1" height="0.2" width="0.5" position="-0.6 0 0"></a-box>
+        <a-box vr-controls action="pause" color="#ffdd57" depth="0.1" height="0.2" width="0.5" position="0 0 0"></a-box>
+        <a-box vr-controls action="stop" color="#ff3860" depth="0.1" height="0.2" width="0.5" position="0.6 0 0"></a-box>
+      </a-entity>
+    </a-scene>
+  </body>
+</html>
+
+
+    
+
