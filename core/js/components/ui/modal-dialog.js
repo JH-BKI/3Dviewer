@@ -125,6 +125,7 @@ AFRAME.registerComponent('modal-dialog', {
     if (this.data.isOpen !== false) {
       this.el.setAttribute('modal-dialog', 'isOpen', false);
     }
+    window.dispatchEvent(new CustomEvent('modal-closed'));
   },
 
   setupEventListeners: function() {

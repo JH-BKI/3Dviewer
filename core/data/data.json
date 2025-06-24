@@ -30,9 +30,9 @@
           "visited": false,
           "requireVisit": false,
           "position": {
-            "x": -0.007177751427460827,
-            "y": -0.045590873807668686,
-            "z": 0.1778939762715815
+            "x": 0.1473261212843705,
+            "y": -0.01578187397851396,
+            "z": 0.19244457649044538
           },
           "details": {
             "targetTitle": "Hotspot 1",
@@ -51,9 +51,9 @@
           "visited": false,
           "requireVisit": false,
           "position": {
-            "x": -0.061611228353920584,
+            "x": -0.13765309186819297,
             "y": 0.0007999999797903001,
-            "z": 0.03915070674980446
+            "z": 0.02058880624917056
           },
           "details": {
             "targetTitle": "Hotspot 2",
@@ -72,9 +72,9 @@
           "visited": false,
           "requireVisit": false,
           "position": {
-            "x": -0.07142038527022092,
-            "y": 0.0003235585033775912,
-            "z": -0.030377497275832846
+            "x": -0.11468000359414082,
+            "y": 0.02267830087247119,
+            "z": -0.0602239560840353
           },
           "details": {
             "targetTitle": "Hotspot 3",
@@ -93,9 +93,9 @@
           "visited": false,
           "requireVisit": false,
           "position": {
-            "x": 0.02587875973730848,
-            "y": 0.0007999999797903001,
-            "z": -0.03356271366895601
+            "x": 0.12413794174692894,
+            "y": 0.023548950113172526,
+            "z": -0.05546005500092292
           },
           "details": {
             "targetTitle": "Hotspot 4",
@@ -114,9 +114,9 @@
           "visited": false,
           "requireVisit": false,
           "position": {
-            "x": 0.05381319704638799,
-            "y": 0.0007999999797903001,
-            "z": 0.03091212843571446
+            "x": 0.10226350974234713,
+            "y": 0.03702352797616393,
+            "z": 0.03475357095834758
           },
           "details": {
             "targetTitle": "Hotspot 5",
@@ -128,16 +128,14 @@
           "id": "hotspot_1750662893705",
           "type": "media",
           "label": "Hotspot 6",
-          "name": "Hotspot 6",
-          "modelUrl": "./core/assets/3d/map_pointer_3d_icon.glb",
-          "modelScale": { "x": 0.01, "y": 0.01, "z": 0.01 },                 
+          "name": "Hotspot 6",              
           "parentName": "mesh_0_24",
           "visited": false,
           "requireVisit": false,
           "position": {
             "x": -0.0013867009797469548,
-            "y": 0.06843802072184663,
-            "z": -0.13027518732310572
+            "y": 0.23672078424602067,
+            "z": -0.11871545947958383
           },
           "details": {
             "targetTitle": "Hotspot 6",

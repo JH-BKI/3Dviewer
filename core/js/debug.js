@@ -35,4 +35,8 @@ function initDebug() {
             }
         }
     });
-} 
+}
+
+window.addEventListener('modal-closed', function(e) {
+    console.log('[HOTSPOT_DEBUG] [GLOBAL] modal-closed event received:', e);
+}); 

@@ -110,7 +110,7 @@ AFRAME.registerComponent('spatial-hotspot-controller', {
             hotspotID: hotspot.id || hotspot.name,
             label: hotspot.label || hotspot.name,
             modelUrl: hotspot.modelUrl || '',
-            modelScale: hotspot.modelScale || {x: 5, y: 5, z: 5},
+            modelScale: hotspot.modelScale || {x: 0.01, y: 0.01, z: 0.01},
           });
           // Append the marker entity to the hotspots container
           this.activeHotspotsContainer.appendChild(hotspotEl);
