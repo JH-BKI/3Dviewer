@@ -46,6 +46,7 @@
         max-width: 600px;
         left: 50%;
         transform: translateX(-50%);
+        height: 50px;
       }
       .control-bar {
         display: flex;
@@ -273,12 +274,13 @@
     </div>
 
     <a-scene>
-
-      <a-videosphere
-        hls-fallback-360="
-        hlsSrc: https://player.vimeo.com/external/1081206255.m3u8?s=c87786c82eb53bfccb018060ae9621df76043ab9&logging=false;
-        mp4Src: https://player.vimeo.com/progressive_redirect/playback/1081206255/rendition/2160p/file.mp4?loc=external&signature=ca47c6f25247cc7bbed4e8bbe083e1ff7847473bbee93f2a59c54b03f997b61f">
-      ></a-videosphere>
+      <a-videosphere 
+      
+      hls-fallback-360="
+      hlsSrc: https://player.vimeo.com/external/1081206255.m3u8?s=c87786c82eb53bfccb018060ae9621df76043ab9&logging=false;
+      mp4Src: https://player.vimeo.com/progressive_redirect/playback/1081206255/rendition/2160p/file.mp4?loc=external&signature=ca47c6f25247cc7bbed4e8bbe083e1ff7847473bbee93f2a59c54b03f997b61f">
+      </a-videosphere>
+      
 
       <a-camera look-controls position="0 1.6 0"></a-camera>
 
@@ -286,11 +288,8 @@
         <a-box vr-controls action="play" color="#23d160" depth="0.1" height="0.2" width="0.5" position="-0.6 0 0"></a-box>
         <a-box vr-controls action="pause" color="#ffdd57" depth="0.1" height="0.2" width="0.5" position="0 0 0"></a-box>
         <a-box vr-controls action="stop" color="#ff3860" depth="0.1" height="0.2" width="0.5" position="0.6 0 0"></a-box>
-      </a-entity>
-    </a-scene>
-  </body>
-</html>
-
-
-    
+      </a-entity>  
+    </a-scene>  
+  </body>  
+</html>  
 

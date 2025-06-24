@@ -56,10 +56,20 @@ AFRAME.registerComponent('model-loader-controller', {
       window.modelConfig = await response.json();
       console.log('Model config loaded:', window.modelConfig);
       
-      // Load a default model (first model in the list)
+      // Debug: load model by id if requested
       if (window.modelConfig && window.modelConfig.models && window.modelConfig.models.length > 0) {
+        if (window.debugLoadModelId) {
+          const idx = window.modelConfig.models.findIndex(m => m.id === window.debugLoadModelId);
+          if (idx !== -1) {
+            console.log('[DEBUG] Loading model by id from debug param:', window.debugLoadModelId, 'at index', idx);
+            this.loadModelByIndex(idx);
+            return;
+          } else {
+            console.warn('[DEBUG] Model id from debug param not found:', window.debugLoadModelId);
+          }
+        }
+        // Load default model (first model in the list)
         console.log('Loading default model (index 0)');
-        //this.loadModelByIndex(0);
         this.loadModelByIndex(0);
       }
     } catch (error) {

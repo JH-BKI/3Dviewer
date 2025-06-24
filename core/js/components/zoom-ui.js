@@ -10,6 +10,7 @@ AFRAME.registerComponent('zoom-ui', {
     },
 
     init: function() {
+        console.log('[ZOOM_UI_DEBUG] init called');
         // Add zoom tracking
         this.zoomDisplay = document.getElementById('zoomValue');
         this.zoomContainer = document.getElementById('zoomDisplay');
@@ -47,6 +48,7 @@ AFRAME.registerComponent('zoom-ui', {
     },
 
     onZoom: function() {
+        //console.log('[ZOOM_UI_DEBUG] onZoom fired');
         // Only show UI if distance changed (i.e., zoom, not pan/rotate)
         const camera = document.querySelector('#camera');
         if (!camera) return;
@@ -85,6 +87,7 @@ AFRAME.registerComponent('zoom-ui', {
     
     tick: function() {
         // Real-time zoom update
+        //console.log('[ZOOM_UI_DEBUG] tick called');
         const camera = document.querySelector('#camera');
         if (!camera) return;
         
@@ -118,7 +121,6 @@ AFRAME.registerComponent('zoom-ui', {
         // Always update zoom value
         if (this.zoomDisplay) {
             this.zoomDisplay.textContent = zoomPercent + '%';
-            
         }
     },
 

@@ -245,7 +245,7 @@ button, .button, select, textarea, input {
     /* drop-down start ========================================================================== */
 
     &.dropmenu {
-        width: 6rem;
+        width: 6.4rem;
     }
 
     &.dropmenu .label {
@@ -293,7 +293,7 @@ button, .button, select, textarea, input {
         border-radius: 0;
         text-align: left;
         font-size: 1em;
-        width: 100%;
+        width: 104%;
         height: 3rem;
         display: block;
     }
@@ -390,6 +390,7 @@ button, .button, select, textarea, input {
     & .scrollable {
         overflow-y: auto;
         scrollbar-color: #555 #1a1a1a;  /* Firefox: thumb, track */
+        overflow-x: hidden;
 
     }
     

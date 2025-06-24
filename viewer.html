@@ -399,5 +399,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// Debug: parse URL params for debug and loadmodel
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('debug') === 'true' && params.get('loadmodel')) {
+    window.debugLoadModelId = params.get('loadmodel');
+    console.log('[DEBUG] debug mode: will load model by id:', window.debugLoadModelId);
+  }
+})();
+
 </script>
 
