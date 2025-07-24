@@ -236,6 +236,19 @@
       "hotspots": []
     },
     {
+      "id": "me",
+      "filename": "me-3.gltf",
+      "modelPosition": { "x": 0, "y": -30.75, "z": 0 },
+      "modelRotation": { "x": 0, "y": 0, "z": 0 },
+      "orbitControls": {
+        "InitialPolarAngle": 90,
+        "InitialAzimuthAngle": 0,
+        "ZoomMaxDistance": 500,
+        "InitialZoomAmmount": 250
+      },
+      "hotspots": []
+    },
+    {
       "id": "tube",
       "filename": "tube.glb",
       "modelPosition": { "x": 0, "y": 0, "z": 0 },
